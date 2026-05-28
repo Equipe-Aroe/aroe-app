@@ -65,7 +65,7 @@ const plans = {
             id: 'aroeira',
             name: 'Aroeira',
             desc: 'Experiência completa com alcance máximo e inteligência artificial para o seu negócio.',
-            price: 49.90,
+            price: 99.90,
             icon: <Leaf size={18} className="text-primary-light" />,
             features: ['Visibilidade Máxima: Topo das buscas com selo de "Farmácia Recomendada".', 'Raio de Alcance: Raio ilimitado / toda a cidade. Entregue onde quiser.', 'Mapa de Demanda (IA): A inteligência artificial (ARIA) analisa e mostra os medicamentos mais vendidos nas regiões próximas para a farmácia conseguir antecipar o estoque e não perder vendas.'],
             cta: 'Escolher este plano',
