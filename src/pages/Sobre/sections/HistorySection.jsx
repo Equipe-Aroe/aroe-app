@@ -2,7 +2,7 @@
 // import appMockup from "@/assets/app-mockup";
 // import delivery from "@/assets/delivery";
 
-export default function NossaHistoria() {
+export default function HistorySection() {
   return (
     <section className="bg-[#1e1b5e] text-white py-16 px-6 font-sans">
       <div className="max-w-5xl mx-auto">

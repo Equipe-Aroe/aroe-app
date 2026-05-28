@@ -52,7 +52,7 @@ const ods = [
   },
 ];
 
-export default function Compromisso() {
+export default function OdsSection() {
   return (
     <section className="min-h-screen w-full bg-[#E9E7F5] py-16 px-6 md:px-16 font-sans">
       <div className="max-w-6xl mx-auto">

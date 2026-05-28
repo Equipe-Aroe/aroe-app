@@ -1,15 +1,15 @@
-import historia from './sections/historia'
-import mvv from './sections/mvv'
-import ods from './sections/ods'
-import equipe from './sections/equipe'
+import HistorySection from './sections/HistorySection'
+import MvvSection from './sections/MvvSection'
+import OdsSection from './sections/OdsSection'
+import TeamSection from './sections/TeamSection'
 
-export default function Landing() {
+export default function Sobre() {
     return (
         <main>
-            <historia/ >
-            <mvv/ >
-            <ods/ >
-            <equipe/ >
+            <HistorySection />
+            <MvvSection />
+            <OdsSection />
+            <TeamSection />
         </main>
     )
 }

@@ -19,7 +19,7 @@ const team = [
   { name: "Paulo Henrique", role: "Back-End", img: paulo, desc: "Desgraçado manda logo a foto" },
 ];
  
-export default function Team() {
+export default function TeamSection() {
   return (
 <div className="min-h-screen bg-white px-6 py-16 md:px-16">
 <div className="mx-auto max-w-6xl">

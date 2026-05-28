@@ -18,7 +18,7 @@ const valores = [
 
 ];
  
-export default function MissaoVisaoValores() {
+export default function MvvSection() {
 
   return (
 <section className="bg-[#eeecfb] min-h-screen w-full flex items-center py-16 px-6 md:px-12">
