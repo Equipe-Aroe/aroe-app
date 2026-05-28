@@ -15,7 +15,7 @@ const team = [
     role: "Scrum Master",
     roleColor: "#4DAA5C",
     img: "/team/gabriel.png",
-    github: "https://github.com/gabriel-old",
+    github: "https://github.com/gabriel.old",
     linkedin: "https://linkedin.com/in/gabriel-oldrado",
   },
   {
