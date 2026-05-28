@@ -36,7 +36,7 @@ const team = [
     bio: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
     img: "/team/isabelly.png",
     github: "https://github.com/belly23cassimiro-arch",
-    linkedin: "https://linkedin.com/in/",
+    linkedin: "https://linkedin.com/in/isabelly-cassimiro",
   },
   {
     name: "Emelly",
@@ -44,7 +44,7 @@ const team = [
     roleColor: "#2A1F5E",
     bio: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
     img: "/team/emelly.png",
-    github: "https://github.com/",
+    github: "https://github.com/emillylaianny-bot",
     linkedin: "https://linkedin.com/in/emelly-laianny-gomes-441a78305",
   },
   {
