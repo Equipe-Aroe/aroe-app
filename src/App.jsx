@@ -4,7 +4,6 @@ import Footer from './components/layout/Footer'
 import Landing from './pages/Landing/Landing'
 import Login from './pages/Login/Login'
 import Register from './pages/Login/Register'
-import Sobre from './pages/Sobre/Sobre'
 
 function App() {
   const location = useLocation()
@@ -19,7 +18,6 @@ function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/sobre" element={<Sobre />} />
       </Routes>
       {!hideDefaultLayout && <Footer />}
     </>
