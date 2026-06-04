@@ -35,42 +35,19 @@ function App() {
   const hideDefaultLayoutOn = ['/login', '/register', '/dashboard']
   const hideDefaultLayout = hideDefaultLayoutOn.some(path => location.pathname.startsWith(path))
 
-  return (
-    <ThemeProvider>
-      <>
-        {!hideDefaultLayout && <Navbar />}
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/pages/sobre" element={<Sobre />} />
-          
-          {/* Dashboard routes */}
-          <Route path="/dashboard" element={<Dashboard />}>
-            <Route index element={<DashboardHome />} />
-            <Route path="receitas" element={<DashboardReceitas />} />
-            <Route path="pedidos" element={<DashboardPedidos />} />
-            <Route path="tratamentos" element={<DashboardTratamentos />} />
-            <Route path="lembretes" element={<DashboardLembretes />} />
-            <Route path="notificacoes" element={<DashboardNotificacoes />} />
-            <Route path="historico" element={<DashboardHistorico />} />
-            <Route path="configuracoes" element={<DashboardConfiguracoes />} />
-            <Route path="ajuda" element={<DashboardAjuda />} />
-          </Route>
-        </Routes>
-        {!hideDefaultLayout && <Footer />}
-      </>
-    </ThemeProvider>
+    return (
+  <ThemeProvider>
     <>
       <SmoothScroll />
+
       {!hideDefaultLayout && <Navbar />}
+
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/pages/sobre" element={<Sobre />} />
-        
-        {/* Dashboard routes */}
+
         <Route path="/dashboard" element={<Dashboard />}>
           <Route index element={<DashboardHome />} />
           <Route path="receitas" element={<DashboardReceitas />} />
@@ -83,9 +60,11 @@ function App() {
           <Route path="ajuda" element={<DashboardAjuda />} />
         </Route>
       </Routes>
+
       {!hideDefaultLayout && <Footer />}
     </>
-  )
+  </ThemeProvider>
+)
 }
 
 export default App
