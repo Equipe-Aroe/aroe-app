@@ -11,7 +11,7 @@ const team = [
     linkedin: "https://linkedin.com/in/brunob-silva",
   },
   {
-    name: "Gabriel Alecrim",
+    name: "Gabriel Oldrado",
     role: "Scrum Master",
     roleColor: "#4DAA5C",
     img: "/team/gabriel.png",
@@ -27,7 +27,7 @@ const team = [
     linkedin: "https://linkedin.com/in/amanda-scarvalho ",
   },
   {
-    name: "Isabelly Junin",
+    name: "Isabelly Guedes",
     role: "Marketing",
     roleColor: "#FD6925",
     img: "/team/isabelly.png",
@@ -35,7 +35,7 @@ const team = [
     linkedin: "https://linkedin.com/in/isabelly-cassimiro",
   },
   {
-    name: "Emelly",
+    name: "Emelly Layanne",
     role: "Designer",
     roleColor: "#2A1F5E",
     img: "/team/emelly.png",
@@ -43,7 +43,7 @@ const team = [
     linkedin: "https://linkedin.com/in/emelly-laianny-gomes-441a78305",
   },
   {
-    name: "Felipe",
+    name: "Felipe Clementino",
     role: "Back-End",
     roleColor: "#FD6925",
     img: "/team/felipe.png",
