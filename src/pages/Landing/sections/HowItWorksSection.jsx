@@ -24,12 +24,11 @@ const steps = [
 
 export default function HowItWorksSection() {
     return (
-        <section className="relative flex flex-col lg:flex-row overflow-hidden min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-500">
         <section id="como-funciona" className="relative flex flex-col lg:flex-row overflow-hidden min-h-screen">
 
             {/* bg */}
             <div
-                className="absolute inset-0 bg-cover bg-top z-0 opacity-10 dark:opacity-5 mix-blend-overlay pointer-events-none"
+                className="absolute inset-0 bg-cover bg-top z-0"
                 style={{ backgroundImage: `url('/bg-howItWorks.png')` }}
             />
 
@@ -37,50 +36,40 @@ export default function HowItWorksSection() {
             <div className="relative z-20 w-full lg:w-1/2 flex items-center px-4 sm:px-6 lg:px-16 py-12 sm:py-16 lg:py-24 lg:min-h-screen">
                 <div className="flex flex-col gap-4 max-w-xl w-full">
 
-                    {/* Badge */}
-                    <div className="inline-flex items-center gap-2 self-start text-xs font-semibold tracking-widest px-4 py-1.5 rounded-full border border-secondary/40 bg-secondary/10 text-secondary dark:text-secondary-light">
+                    <div className="inline-flex items-center gap-2 self-start text-xs font-semibold tracking-widest px-4 py-1.5 rounded-full border border-secondary/40 bg-secondary/10 text-secondary">
                         <span>🌿</span>
                         PRÁTICO E COMPLETO
                     </div>
 
                     <div>
-                        {/* Título Principal */}
-                        <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-slate-900 dark:text-white leading-snug">
-                            Controle seu tratamento do{" "}
-                            <span className="text-secondary dark:text-secondary-light">início ao fim.</span>
+                        <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-primary leading-snug">
+                            Controle seu tratamento
+                            do{" "}
+                            <span className="text-secondary">início ao fim.</span>
                         </h2>
-                        {/* Descrição Principal */}
-                        <p className="mt-3 sm:mt-4 text-sm sm:text-base lg:text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
+                        <p className="mt-3 sm:mt-4 text-sm sm:text-base lg:text-lg text-primary/70 leading-relaxed">
                             Envie sua receita, compare preços e finalize com a melhor
                             opção — tudo pelo celular.
                         </p>
                     </div>
 
                     {/* steps */}
-                    <div className="flex flex-col gap-0 mt-4">
+                    <div className="flex flex-col gap-0">
                         {steps.map((step, index) => (
                             <div key={step.title} className="flex items-start gap-4">
 
                                 <div className="flex flex-col items-center flex-shrink-0">
-                                    {/* Círculo do Número */}
-                                    <div className="w-11 h-11 mt-2 rounded-xl border-2 border-secondary/40 bg-secondary/10 text-secondary dark:text-secondary-light flex items-center justify-center font-bold text-xs">
+                                    <div className="w-11 h-11 mt-2 rounded-xl border-2 border-secondary/40 bg-secondary/10 text-secondary flex items-center justify-center font-bold text-xs">
                                         {step.number}
                                     </div>
-                                    {/* Linha Conectora da Timeline */}
                                     {index < steps.length - 1 && (
-                                        <div className="w-px h-8 bg-secondary/20 dark:bg-secondary/40 my-1" />
+                                        <div className="w-px h-8 bg-secondary/20 my-1" />
                                     )}
                                 </div>
 
                                 <div className="pt-2.5 pb-6">
-                                    {/* Título do Step */}
-                                    <p className="font-semibold text-slate-900 dark:text-white text-base">
-                                        {step.title}
-                                    </p>
-                                    {/* Descrição do Step */}
-                                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-                                        {step.desc}
-                                    </p>
+                                    <p className="font-semibold text-primary text-base">{step.title}</p>
+                                    <p className="text-sm text-primary/60 mt-0.5">{step.desc}</p>
                                 </div>
 
                             </div>
@@ -88,14 +77,13 @@ export default function HowItWorksSection() {
                     </div>
 
                     {/* buttons */}
-                    <div className="flex gap-4 flex-wrap mt-2">
+                    <div className="flex gap-4 flex-wrap">
                         <Button variant='primary'>
                             <Upload size={16} />
                             Enviar receita
                         </Button>
 
-                        {/* Modificado de outlineDark para alternar corretamente conforme o tema */}
-                        <Button variant='outlineDark' className="dark:border-white dark:text-white dark:hover:bg-white/10">
+                        <Button variant='outlineDark'>
                             <Play size={14} className="fill-current" />
                             Ver como funciona
                         </Button>
@@ -110,7 +98,7 @@ export default function HowItWorksSection() {
                     src="/mockups.png"
                     alt="Mockup do aplicativo Aroê mostrando a tela de cotação"
                     loading="lazy"
-                    className="w-full max-w-sm lg:max-w-2xl drop-shadow-2xl dark:brightness-95 contrast-105"
+                    className="w-full max-w-sm lg:max-w-2xl drop-shadow-2xl"
                 />
             </div>
 

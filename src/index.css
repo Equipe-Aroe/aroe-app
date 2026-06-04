@@ -1,7 +1,5 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where(.dark, .dark *));
-
 @theme {
   --color-primary: #2A1F5E;
   --color-primary-light: #C3ACF1;
@@ -13,133 +11,10 @@
 }
 
 html {
-  scroll-behavior: smooth;
-  color-scheme: light dark;
-}
-
-/* ============================================
-   ALTO CONTRASTE - Sobrescreve Tailwind
-   ============================================ */
-html[data-contrast="high"],
-html.high-contrast {
-  background-color: #000000 !important;
-  color: #FFFF00 !important;
-}
-
-html[data-contrast="high"] body,
-html.high-contrast body {
-  background-color: #000000 !important;
-  color: #FFFF00 !important;
-}
-
-/* Textos */
-html[data-contrast="high"] h1,
-html[data-contrast="high"] h2,
-html[data-contrast="high"] h3,
-html[data-contrast="high"] h4,
-html[data-contrast="high"] h5,
-html[data-contrast="high"] h6,
-html[data-contrast="high"] p,
-html[data-contrast="high"] span,
-html[data-contrast="high"] li,
-html[data-contrast="high"] a,
-html[data-contrast="high"] button,
-html.high-contrast h1,
-html.high-contrast h2,
-html.high-contrast h3,
-html.high-contrast h4,
-html.high-contrast h5,
-html.high-contrast h6,
-html.high-contrast p,
-html.high-contrast span,
-html.high-contrast li,
-html.high-contrast a,
-html.high-contrast button {
-  color: #FFFF00 !important;
-}
-
-/* Seções e containers - mantém fundos originais mas adiciona overlay */
-html[data-contrast="high"] section,
-html[data-contrast="high"] main,
-html[data-contrast="high"] article,
-html.high-contrast section,
-html.high-contrast main,
-html.high-contrast article {
-  position: relative;
-}
-
-html[data-contrast="high"] section::before,
-html.high-contrast section::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0.85);
-  pointer-events: none;
-  z-index: 0;
-}
-
-html[data-contrast="high"] section > *,
-html.high-contrast section > * {
-  position: relative;
-  z-index: 1;
-}
-
-/* Buttons */
-html[data-contrast="high"] button,
-html[data-contrast="high"] a[role="button"],
-html.high-contrast button,
-html.high-contrast a[role="button"] {
-  background-color: #000000 !important;
-  color: #FFFF00 !important;
-  border: 2px solid #FFFF00 !important;
   scroll-behavior: auto;
 }
 
-html[data-contrast="high"] button:hover,
-html[data-contrast="high"] a[role="button"]:hover,
-html.high-contrast button:hover,
-html.high-contrast a[role="button"]:hover {
-  background-color: #FFFF00 !important;
-  color: #000000 !important;
-}
-
-/* Inputs */
-html[data-contrast="high"] input,
-html[data-contrast="high"] textarea,
-html[data-contrast="high"] select,
-html.high-contrast input,
-html.high-contrast textarea,
-html.high-contrast select {
-  background-color: #FFFF00 !important;
-  color: #000000 !important;
-  border: 2px solid #000000 !important;
-}
-
-/* Imagens */
-html[data-contrast="high"] img,
-html.high-contrast img {
-  filter: contrast(1.2) brightness(1.1);
-}
-
-/* Selection */
 ::selection {
   background: #4DAA5C;
-  color: white;
-}
-
-html[data-contrast="high"] ::selection,
-html.high-contrast ::selection {
-  background: #FFFF00 !important;
-  color: #000000 !important;
-}
-
-body {
-  background-color: white;
-  color: #0f172a;
-  transition: background-color .3s ease;
-}
-
-.dark body {
-  background-color: #020617;
   color: white;
 }

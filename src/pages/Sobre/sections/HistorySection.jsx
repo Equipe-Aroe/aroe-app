@@ -13,36 +13,39 @@ const particles = [
   { id: 8, size: 6, left: "50%", top: "60%", duration: 10 },
 ]; 
 
+
+
 export default function HistorySection() {
   return (
-    <section className="relative min-h-screen overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white py-20 px-6 transition-colors duration-500">
+    <section className="relative min-h-screen overflow-hidden bg-primary text-white py-20 px-6">
 
-      {/* Glows de Fundo Adaptáveis */}
-      <div className="absolute top-20 left-1/2 -translate-x-1/2 w-125 h-125 bg-secondary/15 dark:bg-secondary/10 blur-[140px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-0 right-0 w-100 h-100 bg-secondary/10 dark:bg-primary-light/10 blur-[120px] rounded-full pointer-events-none" />
+      {/* Glow */}
+      <div className="absolute top-20 left-1/2 -translate-x-1/2 w-125 h-125 bg-secondary/10 blur-[140px] rounded-full" />
+
+      <div className="absolute bottom-0 right-0 w-100 h-100 bg-primary-light/10 blur-[120px] rounded-full" />
 
       {/* Partículas */}
-      {particles.map((particle) => (
-        <motion.div
-          key={particle.id}
-          className="absolute rounded-full bg-secondary/30 dark:bg-secondary/20 pointer-events-none"
-          style={{
-            width: `${particle.size}px`,
-            height: `${particle.size}px`,
-            left: particle.left,
-            top: particle.top,
-          }}
-          animate={{
-            y: [0, -25, 0],
-            opacity: [0.3, 1, 0.3],
-          }}
-          transition={{
-            duration: particle.duration,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-      ))}
+{particles.map((particle) => (
+  <motion.div
+    key={particle.id}
+    className="absolute rounded-full bg-secondary/30"
+    style={{
+      width: `${particle.size}px`,
+      height: `${particle.size}px`,
+      left: particle.left,
+      top: particle.top,
+    }}
+    animate={{
+      y: [0, -25, 0],
+      opacity: [0.3, 1, 0.3],
+    }}
+    transition={{
+      duration: particle.duration,
+      repeat: Infinity,
+      ease: "easeInOut",
+    }}
+  />
+))}
 
       <div className="relative z-10 max-w-6xl mx-auto">
 
@@ -54,18 +57,17 @@ export default function HistorySection() {
           transition={{ duration: 0.7 }}
           className="text-center"
         >
-          {/* Badge */}
-          <span className="inline-flex px-4 py-2 rounded-full bg-slate-200/60 dark:bg-white/10 backdrop-blur-md border border-slate-300/50 dark:border-white/10 text-sm text-secondary dark:text-secondary-light font-medium mb-6">
+          <span className="inline-flex items-center px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-sm text-secondary font-medium mb-6">
             Nossa trajetória
           </span>
 
-          <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 dark:text-white">
+          <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold">
             Nossa história
           </h2>
 
-          <div className="w-24 h-1 bg-secondary dark:bg-secondary-light rounded-full mx-auto mt-6" />
+          <div className="w-24 h-1 bg-secondary rounded-full mx-auto mt-6" />
 
-          <p className="mt-8 max-w-3xl mx-auto text-slate-600 dark:text-slate-300 text-base md:text-lg leading-relaxed">
+          <p className="mt-8 max-w-3xl mx-auto text-white/80 text-base md:text-lg leading-relaxed">
             A Aroê nasceu para simplificar. Encontrar medicamentos manipulados
             pode ser demorado e confuso. Criamos uma forma de enviar sua
             receita, comparar preços e escolher a melhor opção em poucos
@@ -91,13 +93,11 @@ export default function HistorySection() {
               className="
                 px-6 py-3
                 rounded-full
-                bg-white dark:bg-white/10
+                bg-white/10
                 backdrop-blur-md
                 border
-                border-slate-200 dark:border-white/10
-                hover:border-secondary dark:hover:border-secondary-light
-                text-slate-800 dark:text-white
-                shadow-sm dark:shadow-none
+                border-white/10
+                hover:border-secondary
                 transition-all
                 duration-300
               "
@@ -121,15 +121,16 @@ export default function HistorySection() {
           className="mt-16"
         >
           <div className="relative">
+
             {/* Glow da imagem */}
-            <div className="absolute inset-0 bg-secondary/10 dark:bg-secondary/5 blur-3xl rounded-[40px] pointer-events-none" />
+            <div className="absolute inset-0 bg-secondary/10 blur-3xl rounded-[40px]" />
 
             <motion.img
               src="/history-banner.png"
               alt="Farmacêutica, app Aroê e entregador"
               loading="lazy"
               whileHover={{
-                scale: 1.01,
+                scale: 1.02,
               }}
               transition={{
                 duration: 0.6,
@@ -138,13 +139,10 @@ export default function HistorySection() {
                 relative
                 w-full
                 h-auto
-                rounded-3xl md:rounded-[32px]
+                rounded-4xl
                 border
-                border-slate-200/60 dark:border-white/10
-                shadow-[0_20px_50px_rgba(0,0,0,0.08)] dark:shadow-[0_20px_80px_rgba(0,0,0,0.4)]
-                dark:brightness-95
-                transition-all
-                duration-500
+                border-white/10
+                shadow-[0_20px_80px_rgba(0,0,0,0.25)]
               "
             />
           </div>
