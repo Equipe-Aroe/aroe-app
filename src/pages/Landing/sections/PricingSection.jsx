@@ -89,7 +89,7 @@ export default function PricingSection() {
 
     return (
         <section
-            className="min-h-screen flex flex-col justify-center px-6 sm:px-10 py-10 overflow-hidden"
+            className="min-h-screen flex flex-col justify-center px-4 sm:px-6 lg:px-10 py-8 sm:py-10 overflow-hidden"
             style={{ background: 'linear-gradient(160deg, #f0ecfb 0%, #e8f4ea 100%)' }}
         >
             <div className="max-w-5xl mx-auto w-full flex flex-col gap-5">
@@ -97,27 +97,27 @@ export default function PricingSection() {
                 {/* header */}
                 <div className="flex flex-col items-center gap-2 text-center">
 
-                    <div className="inline-flex items-center gap-2 text-xs font-semibold px-4 py-1.5 rounded-full bg-white/70 border border-secondary/30 text-secondary">
+                    <div className="inline-flex items-center gap-2 text-xs font-semibold px-3 sm:px-4 py-1.5 rounded-full bg-white/70 border border-secondary/30 text-secondary">
                         <Leaf size={12} />
                         Sem compromisso • Cancele quando quiser
                     </div>
 
-                    <h2 className="font-serif text-2xl lg:text-3xl font-bold text-primary leading-snug max-w-lg">
+                    <h2 className="font-serif text-xl sm:text-2xl lg:text-3xl font-bold text-primary leading-snug max-w-lg">
                         Escolha como deseja simplificar{' '}
                         <span className="text-secondary">seu cuidado</span>
                     </h2>
 
-                    <p className="text-xs text-primary/60 max-w-md">
+                    <p className="text-xs text-primary/60 max-w-md px-2">
                         Planos pensados para facilitar seu tratamento com praticidade e segurança.
                     </p>
 
                     {/* tabs; mt-1 separa levemente do subtítulo */}
-                    <div className="flex bg-white/60 rounded-full p-1 gap-1 shadow-sm mt-1">
+                    <div className="flex bg-white/60 rounded-full p-1 gap-1 shadow-sm mt-2">
                         {TABS.map((tab) => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
-                                className={`flex items-center gap-2 px-5 py-1.5 rounded-full text-sm font-semibold transition-all duration-300 ${
+                                className={`flex items-center gap-2 px-3 sm:px-5 py-1.5 rounded-full text-xs sm:text-sm font-semibold transition-all duration-300 ${
                                     activeTab === tab
                                         ? 'bg-primary text-white shadow-sm'
                                         : 'text-primary/50 hover:text-primary'
@@ -131,13 +131,13 @@ export default function PricingSection() {
                 </div>
 
                 {/* cards; mt-3 abre espaço entre tabs e cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5 items-center mt-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 items-center mt-4 sm:mt-6">
                     {plans[activeTab].map((plan) => (
                         <div
                             key={plan.id}
                             className={`relative flex flex-col gap-2.5 rounded-2xl p-4 transition-all duration-300 ${
                                 plan.highlight
-                                    ? 'bg-white border-2 border-secondary shadow-xl shadow-secondary/10 scale-105'
+                                    ? 'bg-white border-2 border-secondary shadow-xl shadow-secondary/10 sm:scale-105'
                                     : 'bg-white/70 border border-white shadow-sm'
                             }`}
                         >

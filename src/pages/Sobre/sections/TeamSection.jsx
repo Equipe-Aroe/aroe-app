@@ -86,24 +86,24 @@ function LinkedInIcon() {
 
 function MemberCard({ name, role, roleColor, bio, img, github, linkedin }) {
   return (
-    <div className="flex gap-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-300">
+    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 rounded-2xl border border-gray-200 bg-white p-3 sm:p-4 shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-300">
       <img
         src={img}
         alt={`Foto de ${name}`}
         loading="lazy"
-        className="h-28 w-28 flex-shrink-0 rounded-xl object-cover object-top bg-gray-100"
+        className="h-24 sm:h-28 w-24 sm:w-28 flex-shrink-0 rounded-xl object-cover object-top bg-gray-100"
       />
-      <div className="flex flex-col gap-1 min-w-0">
-        <h3 className="text-base font-bold text-primary">{name}</h3>
-        <p className="text-sm font-semibold" style={{ color: roleColor }}>{role}</p>
-        <p className="text-xs text-gray-500 leading-relaxed mt-0.5">{bio}</p>
+      <div className="flex flex-col gap-1 min-w-0 flex-1">
+        <h3 className="text-sm sm:text-base font-bold text-primary">{name}</h3>
+        <p className="text-xs sm:text-sm font-semibold" style={{ color: roleColor }}>{role}</p>
+        <p className="text-xs text-gray-500 leading-relaxed mt-0.5 line-clamp-2">{bio}</p>
         <div className="mt-auto flex gap-2 pt-2">
           <a
             href={github}
             target="_blank"
             rel="noopener noreferrer"
             aria-label={`GitHub de ${name}`}
-            className="w-7 h-7 rounded-md border border-gray-200 flex items-center justify-center text-gray-400 hover:text-primary hover:border-primary/30 transition-all duration-200"
+            className="w-6 sm:w-7 h-6 sm:h-7 rounded-md border border-gray-200 flex items-center justify-center text-gray-400 hover:text-primary hover:border-primary/30 transition-all duration-200 flex-shrink-0"
           >
             <GitHubIcon />
           </a>
@@ -112,7 +112,7 @@ function MemberCard({ name, role, roleColor, bio, img, github, linkedin }) {
             target="_blank"
             rel="noopener noreferrer"
             aria-label={`LinkedIn de ${name}`}
-            className="w-7 h-7 rounded-md border border-gray-200 flex items-center justify-center text-gray-400 hover:text-primary hover:border-primary/30 transition-all duration-200"
+            className="w-6 sm:w-7 h-6 sm:h-7 rounded-md border border-gray-200 flex items-center justify-center text-gray-400 hover:text-primary hover:border-primary/30 transition-all duration-200 flex-shrink-0"
           >
             <LinkedInIcon />
           </a>
@@ -124,11 +124,11 @@ function MemberCard({ name, role, roleColor, bio, img, github, linkedin }) {
 
 export default function TeamSection() {
   return (
-    <section className="bg-white px-6 py-16 sm:px-10">
-      <div className="mx-auto max-w-5xl flex flex-col gap-10">
+    <section className="bg-white px-4 sm:px-6 lg:px-10 py-12 sm:py-16 lg:py-20">
+      <div className="mx-auto max-w-5xl flex flex-col gap-8 sm:gap-10">
 
         {/* Header */}
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3 sm:gap-4">
           <span className="inline-flex items-center gap-2 self-start text-xs font-semibold px-3 py-1.5 rounded-full bg-primary/8 text-primary border border-primary/15">
             <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
@@ -140,10 +140,10 @@ export default function TeamSection() {
           </span>
 
           <div>
-            <h2 className="font-serif text-4xl md:text-5xl font-bold text-primary leading-tight">
+            <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-primary leading-tight">
               Conheça nossa equipe
             </h2>
-            <p className="mt-2 text-sm text-gray-500 max-w-xl">
+            <p className="mt-2 text-xs sm:text-sm text-gray-500 max-w-xl">
               Complete the form below to send us a message. Our support team will promptly respond to your request.
             </p>
           </div>

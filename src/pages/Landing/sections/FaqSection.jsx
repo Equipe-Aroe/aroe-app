@@ -30,11 +30,11 @@ export default function FaqSection() {
     const toggle = (i) => setOpenIndex(openIndex === i ? null : i)
 
     return (
-        <section className="bg-[#f0ecfb]/40 min-h-screen flex items-center py-20 px-6 sm:px-10">
-            <div className="max-w-3xl mx-auto flex flex-col gap-10 w-full">
+        <section className="bg-[#f0ecfb]/40 min-h-screen flex items-center py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-10">
+            <div className="max-w-3xl mx-auto flex flex-col gap-8 sm:gap-10 w-full">
 
                 {/* header */}
-                <h2 className="font-serif text-4xl font-bold text-primary text-center">
+                <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-primary text-center">
                     Dúvidas Frequentes
                 </h2>
 
@@ -47,9 +47,9 @@ export default function FaqSection() {
                             <div key={faq.q} className="border-t border-primary/10 last:border-b">
                                 <button
                                     onClick={() => toggle(i)}
-                                    className="w-full flex items-center justify-between gap-6 py-6 text-left"
+                                    className="w-full flex items-center justify-between gap-4 py-4 sm:py-6 text-left"
                                 >
-                                    <span className={`text-base font-semibold transition-colors duration-200 ${isOpen ? 'text-secondary' : 'text-primary'}`}>
+                                    <span className={`text-sm sm:text-base font-semibold transition-colors duration-200 ${isOpen ? 'text-secondary' : 'text-primary'}`}>
                                         {faq.q}
                                     </span>
 
@@ -63,7 +63,7 @@ export default function FaqSection() {
                                 </button>
 
                                 <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-48 opacity-100' : 'max-h-0 opacity-0'}`}>
-                                    <p className="pb-6 text-sm text-primary/60 leading-relaxed">
+                                    <p className="pb-4 sm:pb-6 text-xs sm:text-sm text-primary/60 leading-relaxed">
                                         {faq.a}
                                     </p>
                                 </div>
