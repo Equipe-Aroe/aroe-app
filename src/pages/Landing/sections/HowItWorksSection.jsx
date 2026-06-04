@@ -24,7 +24,7 @@ const steps = [
 
 export default function HowItWorksSection() {
     return (
-        <section className="relative flex flex-col lg:flex-row overflow-hidden min-h-screen">
+        <section id="como-funciona" className="relative flex flex-col lg:flex-row overflow-hidden min-h-screen">
 
             {/* bg */}
             <div

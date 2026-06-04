@@ -1,17 +1,28 @@
 import { useEffect, useState } from "react"
-import { Link } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom"
 import { Menu, X } from 'lucide-react'
 import Button from "../ui/Button"
+import { scrollToSection } from "../../utils/scrollToSection"
 
 const NAV_LINKS = [
-    { label: 'Início', to: '/'},
-    { label: 'Como funciona', to: '/como-funciona'},
-    { label: 'Sobre', to: '/pages/sobre'},
+    { label: 'Início', to: '/', hash: 'inicio' },
+    { label: 'Como funciona', to: '/', hash: 'como-funciona' },
+    { label: 'Sobre', to: '/pages/sobre' },
 ]
 
 export default function Navbar() {
+    const location = useLocation()
     const [scrolled, setScrolled] = useState(false)
     const [menuOpen, setMenuOpen] = useState(false)
+
+    function handleNavClick(e, link) {
+        if (!link.hash) return
+
+        if (location.pathname === '/') {
+            e.preventDefault()
+            scrollToSection(link.hash)
+        }
+    }
 
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 120)
@@ -47,9 +58,10 @@ export default function Navbar() {
 
                     <ul className="hidden md:flex items-center gap-6 lg:gap-10">
                         {NAV_LINKS.map((link) => (
-                            <li key={link.to}>
+                            <li key={link.label}>
                                 <Link
-                                    to={link.to}
+                                    to={link.hash ? { pathname: link.to, hash: `#${link.hash}` } : link.to}
+                                    onClick={(e) => handleNavClick(e, link)}
                                     className="text-white/90 text-sm font-medium hover:text-white transition-colors duration-200 whitespace-nowrap"
                                 >
                                     {link.label}
@@ -95,9 +107,12 @@ export default function Navbar() {
  
                     {NAV_LINKS.map((link) => (
                         <Link
-                            key={link.to}
-                            to={link.to}
-                            onClick={() => setMenuOpen(false)}
+                            key={link.label}
+                            to={link.hash ? { pathname: link.to, hash: `#${link.hash}` } : link.to}
+                            onClick={(e) => {
+                                handleNavClick(e, link)
+                                setMenuOpen(false)
+                            }}
                             className="text-white/85 text-base font-medium py-3 border-b border-white/10 hover:text-white hover:pl-1 transition-all duration-200"
                         >
                             {link.label}
