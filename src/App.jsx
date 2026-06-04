@@ -1,4 +1,7 @@
+import { useEffect } from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
+import { scrollToSection } from './utils/scrollToSection'
+import SmoothScroll from './components/SmoothScroll'
 import Navbar from './components/layout/Navbar'
 import Footer from './components/layout/Footer'
 import Landing from './pages/Landing/Landing'
@@ -19,11 +22,21 @@ import DashboardAjuda from './pages/Dashboard/sections/Ajuda'
 function App() {
   const location = useLocation()
 
+  useEffect(() => {
+    if (!location.hash) return
+
+    const id = location.hash.slice(1)
+    const timer = setTimeout(() => scrollToSection(id), 100)
+
+    return () => clearTimeout(timer)
+  }, [location.pathname, location.hash])
+
   const hideDefaultLayoutOn = ['/login', '/register', '/dashboard']
   const hideDefaultLayout = hideDefaultLayoutOn.some(path => location.pathname.startsWith(path))
 
   return (
     <>
+      <SmoothScroll />
       {!hideDefaultLayout && <Navbar />}
       <Routes>
         <Route path="/" element={<Landing />} />
