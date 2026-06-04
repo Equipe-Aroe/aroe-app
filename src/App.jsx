@@ -1,5 +1,8 @@
+import { useEffect } from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import { ThemeProvider } from './contexts/ThemeContext'
+import { scrollToSection } from './utils/scrollToSection'
+import SmoothScroll from './components/SmoothScroll'
 import Navbar from './components/layout/Navbar'
 import Footer from './components/layout/Footer'
 import Landing from './pages/Landing/Landing'
@@ -19,6 +22,15 @@ import DashboardAjuda from './pages/Dashboard/sections/Ajuda'
 
 function App() {
   const location = useLocation()
+
+  useEffect(() => {
+    if (!location.hash) return
+
+    const id = location.hash.slice(1)
+    const timer = setTimeout(() => scrollToSection(id), 100)
+
+    return () => clearTimeout(timer)
+  }, [location.pathname, location.hash])
 
   const hideDefaultLayoutOn = ['/login', '/register', '/dashboard']
   const hideDefaultLayout = hideDefaultLayoutOn.some(path => location.pathname.startsWith(path))
@@ -49,6 +61,30 @@ function App() {
         {!hideDefaultLayout && <Footer />}
       </>
     </ThemeProvider>
+    <>
+      <SmoothScroll />
+      {!hideDefaultLayout && <Navbar />}
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/pages/sobre" element={<Sobre />} />
+        
+        {/* Dashboard routes */}
+        <Route path="/dashboard" element={<Dashboard />}>
+          <Route index element={<DashboardHome />} />
+          <Route path="receitas" element={<DashboardReceitas />} />
+          <Route path="pedidos" element={<DashboardPedidos />} />
+          <Route path="tratamentos" element={<DashboardTratamentos />} />
+          <Route path="lembretes" element={<DashboardLembretes />} />
+          <Route path="notificacoes" element={<DashboardNotificacoes />} />
+          <Route path="historico" element={<DashboardHistorico />} />
+          <Route path="configuracoes" element={<DashboardConfiguracoes />} />
+          <Route path="ajuda" element={<DashboardAjuda />} />
+        </Route>
+      </Routes>
+      {!hideDefaultLayout && <Footer />}
+    </>
   )
 }
 
