@@ -11,7 +11,7 @@ const team = [
     linkedin: "https://linkedin.com/in/brunob-silva",
   },
   {
-    name: "Gabriel Alecrim",
+    name: "Gabriel Oldrado",
     role: "Scrum Master",
     roleColor: "#4DAA5C",
     img: "/team/gabriel.png",
@@ -27,7 +27,7 @@ const team = [
     linkedin: "https://linkedin.com/in/amanda-scarvalho ",
   },
   {
-    name: "Isabelly Junin",
+    name: "Isabelly Cassimiro",
     role: "Marketing",
     roleColor: "#FD6925",
     img: "/team/isabelly.png",
@@ -35,15 +35,16 @@ const team = [
     linkedin: "https://linkedin.com/in/isabelly-cassimiro",
   },
   {
-    name: "Emelly",
+    name: "Emelly Laianny",
     role: "Designer",
     roleColor: "#2A1F5E",
+    roleColorDark: "#C3ACF1", // Lilás Serene para contraste perfeito sobre o fundo Midnight
     img: "/team/emelly.png",
     github: "https://github.com/emillylaianny-bot",
     linkedin: "https://linkedin.com/in/emelly-laianny-gomes-441a78305",
   },
   {
-    name: "Felipe",
+    name: "Felipe Clementino",
     role: "Back-End",
     roleColor: "#FD6925",
     img: "/team/felipe.png",
@@ -54,6 +55,7 @@ const team = [
     name: "Leandro Muniz",
     role: "Full-Stack",
     roleColor: "#2A1F5E",
+    roleColorDark: "#C3ACF1", // Lilás Serene para contraste perfeito sobre o fundo Midnight
     img: "/team/leandro.png",
     github: "https://github.com/Leand09",
     linkedin: "https://linkedin.com/in/leandromunizsantana",
@@ -84,26 +86,33 @@ function LinkedInIcon() {
   )
 }
 
-function MemberCard({ name, role, roleColor, bio, img, github, linkedin }) {
+function MemberCard({ name, role, roleColor, roleColorDark, bio, img, github, linkedin }) {
+  // Define dinamicamente a cor da Role baseado na classe 'dark' injetada no HTML/Body
+  const currentRoleColor = typeof window !== 'undefined' && document.documentElement.classList.contains('dark') 
+    ? (roleColorDark || roleColor) 
+    : roleColor;
+
   return (
-    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 rounded-2xl border border-gray-200 bg-white p-3 sm:p-4 shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-300">
+    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 rounded-2xl border border-gray-200 dark:border-[#C3ACF1]/20 bg-white dark:bg-[#1f1647]/60 backdrop-blur-sm p-3 sm:p-4 shadow-sm hover:shadow-md hover:border-gray-300 dark:hover:border-[#C3ACF1]/40 transition-all duration-300">
       <img
         src={img}
         alt={`Foto de ${name}`}
         loading="lazy"
-        className="h-24 sm:h-28 w-24 sm:w-28 flex-shrink-0 rounded-xl object-cover object-top bg-gray-100"
+        className="h-24 sm:h-28 w-24 sm:w-28 flex-shrink-0 rounded-xl object-cover object-top bg-gray-100 dark:bg-[#2A1F5E]"
       />
       <div className="flex flex-col gap-1 min-w-0 flex-1">
-        <h3 className="text-sm sm:text-base font-bold text-primary">{name}</h3>
-        <p className="text-xs sm:text-sm font-semibold" style={{ color: roleColor }}>{role}</p>
-        <p className="text-xs text-gray-500 leading-relaxed mt-0.5 line-clamp-2">{bio}</p>
+        <h3 className="text-sm sm:text-base font-bold text-[#2A1F5E] dark:text-white transition-colors">{name}</h3>
+        <p className="text-xs sm:text-sm font-semibold transition-colors" style={{ color: currentRoleColor }}>{role}</p>
+        <p className="text-xs text-gray-500 dark:text-purple-100/70 leading-relaxed mt-0.5 line-clamp-2">{bio}</p>
+        
+        {/* Redes Sociais */}
         <div className="mt-auto flex gap-2 pt-2">
           <a
             href={github}
             target="_blank"
             rel="noopener noreferrer"
             aria-label={`GitHub de ${name}`}
-            className="w-6 sm:w-7 h-6 sm:h-7 rounded-md border border-gray-200 flex items-center justify-center text-gray-400 hover:text-primary hover:border-primary/30 transition-all duration-200 flex-shrink-0"
+            className="w-6 sm:w-7 h-6 sm:h-7 rounded-md border border-gray-200 dark:border-purple-300/20 flex items-center justify-center text-gray-400 dark:text-purple-300/60 hover:text-[#2A1F5E] dark:hover:text-[#C3ACF1] hover:border-gray-300 dark:hover:border-[#C3ACF1]/40 transition-all duration-200 flex-shrink-0"
           >
             <GitHubIcon />
           </a>
@@ -112,7 +121,7 @@ function MemberCard({ name, role, roleColor, bio, img, github, linkedin }) {
             target="_blank"
             rel="noopener noreferrer"
             aria-label={`LinkedIn de ${name}`}
-            className="w-6 sm:w-7 h-6 sm:h-7 rounded-md border border-gray-200 flex items-center justify-center text-gray-400 hover:text-primary hover:border-primary/30 transition-all duration-200 flex-shrink-0"
+            className="w-6 sm:w-7 h-6 sm:h-7 rounded-md border border-gray-200 dark:border-purple-300/20 flex items-center justify-center text-gray-400 dark:text-purple-300/60 hover:text-[#2A1F5E] dark:hover:text-[#C3ACF1] hover:border-gray-300 dark:hover:border-[#C3ACF1]/40 transition-all duration-200 flex-shrink-0"
           >
             <LinkedInIcon />
           </a>
@@ -124,12 +133,13 @@ function MemberCard({ name, role, roleColor, bio, img, github, linkedin }) {
 
 export default function TeamSection() {
   return (
-    <section className="bg-white px-4 sm:px-6 lg:px-10 py-12 sm:py-16 lg:py-20">
+    // Fundo da seção: Branco no light mode e Roxo Midnight (#2A1F5E) no dark mode
+    <section className="bg-white dark:bg-[#2A1F5E] px-4 sm:px-6 lg:px-10 py-12 sm:py-16 lg:py-20 transition-colors duration-500">
       <div className="mx-auto max-w-5xl flex flex-col gap-8 sm:gap-10">
 
         {/* Header */}
         <div className="flex flex-col gap-3 sm:gap-4">
-          <span className="inline-flex items-center gap-2 self-start text-xs font-semibold px-3 py-1.5 rounded-full bg-primary/8 text-primary border border-primary/15">
+          <span className="inline-flex items-center gap-2 self-start text-xs font-semibold px-3 py-1.5 rounded-full bg-[#2A1F5E]/5 dark:bg-[#C3ACF1]/10 text-[#2A1F5E] dark:text-[#C3ACF1] border border-[#2A1F5E]/10 dark:border-[#C3ACF1]/20">
             <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
               <circle cx="9" cy="7" r="4" />
@@ -140,17 +150,17 @@ export default function TeamSection() {
           </span>
 
           <div>
-            <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-primary leading-tight">
+            <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-[#2A1F5E] dark:text-white leading-tight">
               Conheça nossa equipe
             </h2>
-            <p className="mt-2 text-xs sm:text-sm text-gray-500 max-w-xl">
+            <p className="mt-2 text-xs sm:text-sm text-gray-500 dark:text-purple-100/60 max-w-xl">
               Complete the form below to send us a message. Our support team will promptly respond to your request.
             </p>
           </div>
 
           <Link
             to="/contato"
-            className="inline-flex items-center gap-2 self-start rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary/90 transition-colors duration-200"
+            className="inline-flex items-center gap-2 self-start rounded-xl bg-[#2A1F5E] dark:bg-[#4DAA5C] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#2A1F5E]/90 dark:hover:bg-[#4DAA5C]/90 transition-colors duration-200 shadow-md shadow-black/5"
           >
             Contato <ArrowRight className="h-4 w-4" />
           </Link>
