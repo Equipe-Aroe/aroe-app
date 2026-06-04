@@ -24,12 +24,12 @@ export default function AccessibilityToolbar() {
   const [voiceEnabled, setVoiceEnabled] = useState(false);
 
   const speakText = (text) => {
-    if (!window.speechSynthesis) {
+    if (!globalThis.speechSynthesis) {
       alert("Leitor de voz não suportado neste navegador");
       return;
     }
 
-    window.speechSynthesis.cancel();
+    globalThis.speechSynthesis.cancel();
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "pt-BR";
@@ -37,11 +37,11 @@ export default function AccessibilityToolbar() {
     utterance.pitch = 1;
     utterance.volume = 1;
 
-    window.speechSynthesis.speak(utterance);
+    globalThis.speechSynthesis.speak(utterance);
   };
 
   const stopSpeech = () => {
-    window.speechSynthesis.cancel();
+    globalThis.speechSynthesis.cancel();
   };
 
   const handleSpeakPage = () => {

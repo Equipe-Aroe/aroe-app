@@ -24,8 +24,15 @@ const steps = [
 
 export default function HowItWorksSection() {
     return (
+<<<<<<< HEAD
         <section id="como-funciona" className="relative flex flex-col lg:flex-row overflow-hidden min-h-screen">
 
+=======
+        <section 
+            id="como-funciona" 
+            className="relative flex flex-col lg:flex-row overflow-hidden min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-500"
+        >
+>>>>>>> 274a2b83356d1baeefa5d5c3d847c87ab2a1c817
             {/* bg */}
             <div
                 className="absolute inset-0 bg-cover bg-top z-0 opacity-10 dark:opacity-5 mix-blend-overlay pointer-events-none"
