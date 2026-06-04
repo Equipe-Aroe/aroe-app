@@ -28,7 +28,7 @@ export default function Button({
     onClick,
 }) {
     const base =
-        `inline-flex items-center gap-2 text-sm font-semibold px-6 py-2.5 ` +
+        `inline-flex items-center gap-2 text-xs sm:text-sm font-semibold px-4 sm:px-6 py-2 sm:py-2.5 ` +
         `cursor-pointer transition-all duration-300 select-none ` +
         `${variants[variant] ?? variants.primary} ${className}`
  

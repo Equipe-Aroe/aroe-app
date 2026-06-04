@@ -33,7 +33,7 @@ export default function HowItWorksSection() {
             />
 
             {/* text */}
-            <div className="relative z-20 w-full lg:w-1/2 flex items-center px-6 sm:px-10 lg:px-16 py-24 lg:min-h-screen">
+            <div className="relative z-20 w-full lg:w-1/2 flex items-center px-4 sm:px-6 lg:px-16 py-12 sm:py-16 lg:py-24 lg:min-h-screen">
                 <div className="flex flex-col gap-4 max-w-xl w-full">
 
                     <div className="inline-flex items-center gap-2 self-start text-xs font-semibold tracking-widest px-4 py-1.5 rounded-full border border-secondary/40 bg-secondary/10 text-secondary">
@@ -42,12 +42,12 @@ export default function HowItWorksSection() {
                     </div>
 
                     <div>
-                        <h2 className="font-serif text-4xl lg:text-5xl font-bold text-primary leading-snug">
+                        <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-primary leading-snug">
                             Controle seu tratamento
                             do{" "}
                             <span className="text-secondary">início ao fim.</span>
                         </h2>
-                        <p className="mt-4 text-base lg:text-lg text-primary/70 leading-relaxed">
+                        <p className="mt-3 sm:mt-4 text-sm sm:text-base lg:text-lg text-primary/70 leading-relaxed">
                             Envie sua receita, compare preços e finalize com a melhor
                             opção — tudo pelo celular.
                         </p>
@@ -93,7 +93,7 @@ export default function HowItWorksSection() {
             </div>
 
             {/* mockups */}
-            <div className="relative z-20 w-full lg:w-1/2 flex justify-center items-center min-h-64 lg:min-h-screen overflow-hidden px-6 pb-16 lg:pb-0">
+            <div className="relative z-20 w-full lg:w-1/2 flex justify-center items-center min-h-48 sm:min-h-64 lg:min-h-screen overflow-hidden px-4 sm:px-6 pb-12 sm:pb-16 lg:pb-0">
                 <img
                     src="/mockups.png"
                     alt="Mockup do aplicativo Aroê mostrando a tela de cotação"

@@ -6,7 +6,7 @@ import Button from "../ui/Button"
 const NAV_LINKS = [
     { label: 'Início', to: '/'},
     { label: 'Como funciona', to: '/como-funciona'},
-    { label: 'Sobre', to: '/sobre'},
+    { label: 'Sobre', to: '/pages/sobre'},
 ]
 
 export default function Navbar() {
@@ -39,18 +39,18 @@ export default function Navbar() {
                 }`}
             >
 
-                <nav className="max-w-6xl mx-auto px-6 md:px-8 py-3 flex items-center justify-between">
+                <nav className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3 flex items-center justify-between">
 
                     <Link to="/" className="flex items-center flex-shrink-0">
-                        <img src="/logo.png" alt="Logo da Aroê" className="h-9 w-auto"/>
+                        <img src="/logo.png" alt="Logo da Aroê" className="h-7 sm:h-9 w-auto"/>
                     </Link>
 
-                    <ul className="hidden md:flex items-center gap-8 lg:gap-10">
+                    <ul className="hidden md:flex items-center gap-6 lg:gap-10">
                         {NAV_LINKS.map((link) => (
                             <li key={link.to}>
                                 <Link
                                     to={link.to}
-                                    className="text-white/90 text-sm font-medium hover:text-white transition-colors duration-200"
+                                    className="text-white/90 text-sm font-medium hover:text-white transition-colors duration-200 whitespace-nowrap"
                                 >
                                     {link.label}
                                 </Link>

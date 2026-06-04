@@ -55,19 +55,19 @@ const ods = [
 export default function OdsSection() {
   return (
     <section
-      className="w-full py-16 px-6 md:px-10"
+      className="w-full py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-10"
       style={{ backgroundColor: "#EDEAF6" }}
     >
-      <div className="max-w-5xl mx-auto flex flex-col gap-10">
+      <div className="max-w-5xl mx-auto flex flex-col gap-8 sm:gap-10">
 
         {/* Header */}
-        <div className="flex flex-col gap-3">
-          <h2 className="font-serif text-4xl md:text-5xl font-bold text-primary leading-tight">
+        <div className="flex flex-col gap-2 sm:gap-3">
+          <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-primary leading-tight">
             Compromisso com um{" "}
             <span className="text-secondary">mundo melhor</span>
           </h2>
 
-          <div className="flex flex-col gap-1 text-primary/80 text-base md:text-lg max-w-2xl">
+          <div className="flex flex-col gap-1 text-primary/80 text-sm sm:text-base lg:text-lg max-w-2xl">
             <p>A Aroê nasce com um propósito claro.</p>
             <p>
               Impactar diretamente a saúde e o bem-estar das pessoas, por meio da
@@ -76,24 +76,24 @@ export default function OdsSection() {
             <p>E assim estamos alinhados com três grandes</p>
           </div>
 
-          <div className="h-[3px] w-48 bg-primary rounded-full mt-1" />
+          <div className="h-[3px] w-32 sm:w-48 bg-primary rounded-full mt-1" />
         </div>
 
         {/* Cards ODS */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {ods.map((o) => (
-            <article key={o.number} className="flex flex-col gap-4">
+            <article key={o.number} className="flex flex-col gap-3 sm:gap-4">
 
               {/* Topo: número + título lado a lado */}
               <div className="flex items-start gap-2">
                 <span
-                  className="text-5xl font-extrabold leading-none"
+                  className="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-none"
                   style={{ color: o.color }}
                 >
                   {o.number}
                 </span>
                 <span
-                  className="text-[11px] font-extrabold leading-tight whitespace-pre-line mt-1"
+                  className="text-[10px] sm:text-[11px] font-extrabold leading-tight whitespace-pre-line mt-1"
                   style={{ color: o.color }}
                 >
                   {o.title}
@@ -102,7 +102,7 @@ export default function OdsSection() {
 
               {/* Ícone com fundo colorido */}
               <div
-                className="rounded-xl flex items-center justify-center py-8"
+                className="rounded-xl flex items-center justify-center py-6 sm:py-8"
                 style={{ backgroundColor: o.bg }}
               >
                 {o.icon}
@@ -110,7 +110,7 @@ export default function OdsSection() {
 
               {/* Caption colorida */}
               <p
-                className="text-base font-semibold leading-snug"
+                className="text-sm sm:text-base font-semibold leading-snug"
                 style={{ color: o.color }}
               >
                 {o.caption}
@@ -122,11 +122,11 @@ export default function OdsSection() {
 
         {/* Rodapé */}
         <div className="flex justify-center">
-          <div className="flex items-center gap-3 px-6 py-3 rounded-full border border-primary/20 bg-white/60">
-            <span className="flex items-center justify-center w-7 h-7 rounded-full bg-secondary/15">
-              <Leaf className="w-4 h-4 text-secondary" />
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 px-4 sm:px-6 py-3 rounded-full border border-primary/20 bg-white/60 text-center sm:text-left">
+            <span className="flex items-center justify-center w-6 sm:w-7 h-6 sm:h-7 rounded-full bg-secondary/15 flex-shrink-0">
+              <Leaf className="w-3 sm:w-4 h-3 sm:h-4 text-secondary" />
             </span>
-            <p className="text-primary/70 text-sm">
+            <p className="text-primary/70 text-xs sm:text-sm">
               Cuidar de pessoas é o que nos move. Inovar é o que a gente faz
             </p>
           </div>

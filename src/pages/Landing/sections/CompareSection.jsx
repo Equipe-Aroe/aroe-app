@@ -43,34 +43,34 @@ function QuoteCard({ name, delivery, price, avatarBg, avatarContent }) {
 export default function CompareSection() {
     return (
         /* bg */
-        <section className="min-h-screen flex items-center px-6 sm:px-10 py-16 overflow-hidden"
+        <section className="min-h-screen flex items-center px-4 sm:px-6 lg:px-10 py-12 sm:py-16 overflow-hidden"
             style={{ background: 'linear-gradient(135deg, #f0ecfb 0%, #e8f4ea 100%)' }}>
 
             <div className="max-w-5xl mx-auto w-full">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12 items-center">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10 lg:gap-12 items-center">
 
                     {/* left col */}
                     <div className="flex flex-col gap-4">
 
                         {/* badge */}
-                        <div className="inline-flex items-center gap-2 self-start text-xs font-semibold px-4 py-2 rounded-full bg-white/80 border border-primary/15 text-primary shadow-sm">
+                        <div className="inline-flex items-center gap-2 self-start text-xs font-semibold px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-white/80 border border-primary/15 text-primary shadow-sm">
                             <Tag size={13} className="text-primary/60" />
                             Veja na prática
                         </div>
 
                         {/* title */}
                         <div>
-                            <h2 className="font-serif text-4xl lg:text-5xl font-bold text-primary leading-tight">
+                            <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-primary leading-tight">
                                 Compare preços <br />
                                 e <span className="text-secondary">economize</span>
                             </h2>
-                            <p className="mt-4 text-base text-primary/60 leading-relaxed max-w-xs">
+                            <p className="mt-3 sm:mt-4 text-sm sm:text-base text-primary/60 leading-relaxed max-w-xs">
                                 Enviamos sua receita para diversas farmácias parceiras e você recebe as melhores opções para escolher.
                             </p>
                         </div>
 
-                        <div className="flex items-center gap-4">
-                            <div className="flex-1 bg-white rounded-2xl p-5 flex flex-col gap-3 shadow-sm border border-white">
+                        <div className="flex flex-col lg:flex-row items-center lg:items-start gap-4">
+                            <div className="flex-1 w-full bg-white rounded-2xl p-4 sm:p-5 flex flex-col gap-3 shadow-sm border border-white">
 
                                 {/* receita */}
                                 <div className="flex items-center gap-3">
@@ -117,7 +117,7 @@ export default function CompareSection() {
                     </div>
 
                     {/* right col */}
-                    <div className="bg-white rounded-3xl shadow-md border border-white p-6 flex flex-col gap-1">
+                    <div className="bg-white rounded-3xl shadow-md border border-white p-4 sm:p-6 flex flex-col gap-1 w-full">
 
                         {/* header rc */}
                         <div className="flex items-center justify-between mb-4">

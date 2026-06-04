@@ -17,24 +17,24 @@ export default function HeroSection() {
                 }}
             />
 
-            <div className="relative z-20 w-full max-w-xl px-6 md:px-12 pt-20">
+            <div className="relative z-20 w-full max-w-xl px-4 sm:px-6 md:px-12 pt-16 sm:pt-20">
                 <span className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-widest px-3 py-1 rounded-full mb-6 text-white border border-white/30 bg-white/15 backdrop-blur-sm">
                     <span className="w-1.5 h-1.5 rounded-full bg-secondary" />
                     A tecnologia que cuida de você
                 </span>
 
-                <h1 className="font-serif text-4xl md:text-5xl font-bold leading-tight text-white mb-4">
+                <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight text-white mb-4">
                     Seus medicamentos<br />
                     manipulados,
                     <span className="text-secondary"> sem complicação.</span>
                 </h1>
 
-                <p className="text-sm text-white/90 leading-relaxed mb-8 max-w-sm">
+                <p className="text-xs sm:text-sm text-white/90 leading-relaxed mb-6 sm:mb-8 max-w-sm">
                     Envie sua receita uma vez, compare orçamentos de farmácias
                     qualificadas e receba em casa com total transparência.
                 </p>
 
-                <div className="flex gap-4 flex-wrap mb-10">
+                <div className="flex gap-2 sm:gap-4 flex-wrap mb-8 sm:mb-10">
                     <Button variant="outline">Sou Farmácia</Button>
                     <Button variant="primary">Enviar Receita</Button>
                 </div>
