@@ -6,7 +6,7 @@ import Button from "../ui/Button"
 const NAV_LINKS = [
     { label: 'Início', to: '/'},
     { label: 'Como funciona', to: '/como-funciona'},
-    { label: 'Sobre', to: '/sobre'},
+    { label: 'Sobre', to: '/pages/sobre'},
 ]
 
 export default function Navbar() {
