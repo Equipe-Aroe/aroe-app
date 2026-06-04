@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
+import { ThemeProvider } from './contexts/ThemeContext'
 import { scrollToSection } from './utils/scrollToSection'
 import SmoothScroll from './components/SmoothScroll'
 import Navbar from './components/layout/Navbar'
@@ -34,17 +35,19 @@ function App() {
   const hideDefaultLayoutOn = ['/login', '/register', '/dashboard']
   const hideDefaultLayout = hideDefaultLayoutOn.some(path => location.pathname.startsWith(path))
 
-  return (
+    return (
+  <ThemeProvider>
     <>
       <SmoothScroll />
+
       {!hideDefaultLayout && <Navbar />}
+
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/pages/sobre" element={<Sobre />} />
-        
-        {/* Dashboard routes */}
+
         <Route path="/dashboard" element={<Dashboard />}>
           <Route index element={<DashboardHome />} />
           <Route path="receitas" element={<DashboardReceitas />} />
@@ -57,9 +60,11 @@ function App() {
           <Route path="ajuda" element={<DashboardAjuda />} />
         </Route>
       </Routes>
+
       {!hideDefaultLayout && <Footer />}
     </>
-  )
+  </ThemeProvider>
+)
 }
 
 export default App
