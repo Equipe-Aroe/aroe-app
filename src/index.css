@@ -9,3 +9,12 @@
   --font-serif: "DM Serif Text", serif;
   --font-sans: "DM Sans", sans-serif;
 }
+
+html {
+  scroll-behavior: smooth;
+}
+
+::selection {
+  background: #4DAA5C;
+  color: white;
+}
