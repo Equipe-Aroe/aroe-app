@@ -28,6 +28,7 @@ const team = [
   },
   {
     name: "Isabelly Cassimiro",
+    name: "Isabelly Guedes",
     role: "Marketing",
     roleColor: "#FD6925",
     img: "/team/isabelly.png",
@@ -36,6 +37,7 @@ const team = [
   },
   {
     name: "Emelly Laianny",
+    name: "Emelly Layanne",
     role: "Designer",
     roleColor: "#2A1F5E",
     roleColorDark: "#C3ACF1", // Lilás Serene para contraste perfeito sobre o fundo Midnight

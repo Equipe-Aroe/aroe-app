@@ -92,6 +92,7 @@ html.high-contrast a[role="button"] {
   background-color: #000000 !important;
   color: #FFFF00 !important;
   border: 2px solid #FFFF00 !important;
+  scroll-behavior: auto;
 }
 
 html[data-contrast="high"] button:hover,

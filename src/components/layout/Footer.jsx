@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { scrollToSection } from "../../utils/scrollToSection";
 
 const links = {
     Produtos: [
@@ -8,8 +9,8 @@ const links = {
         {label: "Fitoterápicos", to: "/medicamentos/fitoterapicos"},
     ],
     Empresa: [
-        {label: "Sobre nós", to: "/Sobre"},
-        {label: "Como Funciona", to: "/como-funciona"},
+        {label: "Sobre nós", to: "/pages/sobre"},
+        {label: "Como Funciona", to: "/", hash: "como-funciona"},
         {label: "Blog", to: "/blog"},
         {label: "Carreiras", to: "/carreiras"},
     ],
@@ -22,6 +23,17 @@ const links = {
 }
 
 export default function Footer() {
+    const location = useLocation()
+
+    function handleLinkClick(e, item) {
+        if (!item.hash) return
+
+        if (location.pathname === '/') {
+            e.preventDefault()
+            scrollToSection(item.hash)
+        }
+    }
+
     return (
         <footer className="bg-primary text-white">
 
@@ -45,7 +57,8 @@ export default function Footer() {
                                 {items.map((item) => (
                                     <li key={item.label}>
                                         <Link
-                                            to={item.to}
+                                            to={item.hash ? { pathname: item.to, hash: `#${item.hash}` } : item.to}
+                                            onClick={(e) => handleLinkClick(e, item)}
                                             className="text-xs sm:text-sm text-white/60 hover:text-white transition-colors duration-200"
                                         >
                                             {item.label}

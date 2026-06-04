@@ -4,7 +4,7 @@ import Button from '../../../components/ui/Button'
 
 export default function HeroSection() {
     return (
-        <section className="relative h-screen flex items-center justify-start overflow-hidden antialiased">
+        <section id="inicio" className="relative h-screen flex items-center justify-start overflow-hidden antialiased">
             
             <div
                 className="absolute inset-0 bg-cover bg-center z-0"
