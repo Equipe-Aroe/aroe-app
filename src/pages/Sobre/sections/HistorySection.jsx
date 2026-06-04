@@ -1,40 +1,154 @@
-const highlights = ["Simples", "Rápido", "Sem complicação"]
+import { motion } from "framer-motion";
+
+const highlights = ["Simples", "Rápido", "Sem complicação"];
+
+const particles = [
+  { id: 1, size: 6, left: "10%", top: "15%", duration: 6 },
+  { id: 2, size: 8, left: "25%", top: "70%", duration: 8 },
+  { id: 3, size: 5, left: "40%", top: "30%", duration: 7 },
+  { id: 4, size: 10, left: "60%", top: "20%", duration: 9 },
+  { id: 5, size: 7, left: "75%", top: "80%", duration: 6 },
+  { id: 6, size: 5, left: "85%", top: "40%", duration: 8 },
+  { id: 7, size: 9, left: "15%", top: "90%", duration: 7 },
+  { id: 8, size: 6, left: "50%", top: "60%", duration: 10 },
+]; 
+
+
 
 export default function HistorySection() {
   return (
-    <section className="min-h-screen bg-primary text-white py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-10">
-      <div className="max-w-5xl mx-auto flex flex-col gap-6 sm:gap-8">
+    <section className="relative min-h-screen overflow-hidden bg-primary text-white py-20 px-6">
 
-        <h2 className="text-center font-serif text-2xl sm:text-3xl lg:text-4xl xl:text-5xl lg:text-6xl font-bold leading-tight">
-          Nossa história
-        </h2>
+      {/* Glow */}
+      <div className="absolute top-20 left-1/2 -translate-x-1/2 w-125 h-125 bg-secondary/10 blur-[140px] rounded-full" />
 
-        <p className="text-xs sm:text-sm lg:text-base lg:text-lg leading-relaxed max-w-3xl text-white mx-auto text-center sm:text-left">
-          A Aroê nasceu para simplificar.<br />
-          Encontrar medicamentos manipulados pode ser demorado e confuso. Criamos
-          uma forma de enviar sua receita, comparar preços e escolher a melhor
-          opção em poucos passos.
-        </p>
+      <div className="absolute bottom-0 right-0 w-100 h-100 bg-primary-light/10 blur-[120px] rounded-full" />
 
-        <div className="flex flex-wrap justify-center sm:justify-start  gap-2 sm:gap-3">
+      {/* Partículas */}
+{particles.map((particle) => (
+  <motion.div
+    key={particle.id}
+    className="absolute rounded-full bg-secondary/30"
+    style={{
+      width: `${particle.size}px`,
+      height: `${particle.size}px`,
+      left: particle.left,
+      top: particle.top,
+    }}
+    animate={{
+      y: [0, -25, 0],
+      opacity: [0.3, 1, 0.3],
+    }}
+    transition={{
+      duration: particle.duration,
+      repeat: Infinity,
+      ease: "easeInOut",
+    }}
+  />
+))}
+
+      <div className="relative z-10 max-w-6xl mx-auto">
+
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.7 }}
+          className="text-center"
+        >
+          <span className="inline-flex items-center px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-sm text-secondary font-medium mb-6">
+            Nossa trajetória
+          </span>
+
+          <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold">
+            Nossa história
+          </h2>
+
+          <div className="w-24 h-1 bg-secondary rounded-full mx-auto mt-6" />
+
+          <p className="mt-8 max-w-3xl mx-auto text-white/80 text-base md:text-lg leading-relaxed">
+            A Aroê nasceu para simplificar. Encontrar medicamentos manipulados
+            pode ser demorado e confuso. Criamos uma forma de enviar sua
+            receita, comparar preços e escolher a melhor opção em poucos
+            passos.
+          </p>
+        </motion.div>
+
+        {/* Highlights */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.2 }}
+          className="flex flex-wrap justify-center gap-4 mt-12"
+        >
           {highlights.map((label) => (
-            <span
+            <motion.div
               key={label}
-              className="border-2 border-secondary text-white font-bold text-xs sm:text-sm px-4 sm:px-8 py-1.5 sm:py-2.5 rounded-full whitespace-nowrap"
+              whileHover={{
+                y: -4,
+                scale: 1.05,
+              }}
+              className="
+                px-6 py-3
+                rounded-full
+                bg-white/10
+                backdrop-blur-md
+                border
+                border-white/10
+                hover:border-secondary
+                transition-all
+                duration-300
+              "
             >
-              {label}
-            </span>
+              <span className="font-medium">
+                {label}
+              </span>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
 
-        <img
-          src="/history-banner.png"
-          alt="Farmacêutica, app Aroê e entregador"
-          loading="lazy"
-          className="w-full h-40 sm:h-52 lg:h-72 object-cover rounded-2xl"
-        />
+        {/* Imagem */}
+        <motion.div
+          initial={{ opacity: 0, y: 60 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{
+            duration: 0.8,
+            delay: 0.3,
+          }}
+          className="mt-16"
+        >
+          <div className="relative">
+
+            {/* Glow da imagem */}
+            <div className="absolute inset-0 bg-secondary/10 blur-3xl rounded-[40px]" />
+
+            <motion.img
+              src="/history-banner.png"
+              alt="Farmacêutica, app Aroê e entregador"
+              loading="lazy"
+              whileHover={{
+                scale: 1.02,
+              }}
+              transition={{
+                duration: 0.6,
+              }}
+              className="
+                relative
+                w-full
+                h-auto
+                rounded-4xl
+                border
+                border-white/10
+                shadow-[0_20px_80px_rgba(0,0,0,0.25)]
+              "
+            />
+          </div>
+        </motion.div>
 
       </div>
     </section>
-  )
+  );
 }

@@ -8,7 +8,7 @@ const team = [
     roleColor: "#4DAA5C",
     img: "/team/bruno.png",
     github: "https://github.com/brunobdev04",
-    linkedin: "https://linkedin.com/in/brunobdev04",
+    linkedin: "https://linkedin.com/in/brunob-silva",
   },
   {
     name: "Gabriel Alecrim",
