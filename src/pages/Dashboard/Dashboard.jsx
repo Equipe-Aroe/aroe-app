@@ -4,6 +4,7 @@ import DashboardSidebar from '../../components/layout/DashboardSidebar'
 import DashboardHeader from '../../components/layout/DashboardHeader'
 import { useThemeContext } from '../../contexts/ThemeContext' // Importação do contexto global de tema
 
+
 export default function Dashboard() {
     const [sidebarOpen, setSidebarOpen] = useState(false)
     const { highContrast } = useThemeContext()
@@ -29,6 +30,7 @@ export default function Dashboard() {
                 {/* Content */}
                 <main className="flex-1 overflow-auto">
                     <div className="p-4 sm:p-6 max-w-7xl mx-auto w-full">
+                        {/* O Outlet gerencia sozinho o que deve aparecer com base na URL */}
                         <Outlet />
                     </div>
                 </main>

@@ -1,10 +1,11 @@
 /* eslint-disable react/prop-types */
 import { Link, useLocation } from 'react-router-dom'
-import { Home, FileText, ShoppingCart, Pill, Heart, Bell, History, Settings, HelpCircle, X, ChevronLeft, Menu } from 'lucide-react'
+import { Home, Sparkles, FileText, ShoppingCart, Pill, Heart, Bell, History, Settings, HelpCircle, X, ChevronLeft, Menu } from 'lucide-react'
 import { useThemeContext } from '../../contexts/ThemeContext' // Ajuste o caminho conforme seu projeto
 
 const MENU_ITEMS = [
     { label: 'Início', icon: Home, to: '/dashboard' },
+    { label: 'Ária IA', icon: Sparkles, to: '/dashboard/aria' },
     { label: 'Receitas', icon: FileText, to: '/dashboard/receitas' },
     { label: 'Pedidos', icon: ShoppingCart, to: '/dashboard/pedidos' },
     { label: 'Tratamentos', icon: Pill, to: '/dashboard/tratamentos' },
