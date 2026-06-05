@@ -1,7 +1,10 @@
 /* eslint-disable react/prop-types */
 import { Link, useLocation } from 'react-router-dom'
-import { Home, Sparkles, FileText, ShoppingCart, Pill, Heart, Bell, History, Settings, HelpCircle, X, ChevronLeft, Menu } from 'lucide-react'
-import { useThemeContext } from '../../contexts/ThemeContext' // Ajuste o caminho conforme seu projeto
+import { Home, Sparkles, FileText, ShoppingCart, Pill, Heart, Bell, History, Settings, HelpCircle, ChevronLeft, Menu } from 'lucide-react'
+import { useThemeContext } from '../../contexts/ThemeContext'
+
+// Importação do logotipo oficial fornecido da Aroê
+import aroeLogo from '/pill-logo.png' 
 
 const MENU_ITEMS = [
     { label: 'Início', icon: Home, to: '/dashboard' },
@@ -25,91 +28,91 @@ export default function DashboardSidebar({ isOpen, setIsOpen }) {
 
     const isActive = (path) => location.pathname === path
 
-    // Gerenciamento de cores dinâmicas para Alto Contraste, Dark e Light Mode
+    // Ajuste Clean: Saem os gradientes escuros pesados e entram fundos minimalistas e sofisticados
     const sidebarBgClass = highContrast
         ? 'bg-white text-black border-r-4 border-black dark:bg-black dark:text-white dark:border-white'
-        : 'bg-gradient-to-b from-primary to-[#1F1645] text-white dark:from-slate-950 dark:to-slate-950 dark:border-slate-900 dark:text-slate-200'
+        : 'bg-white border-r border-gray-100 text-gray-700 dark:bg-slate-950 dark:text-slate-200 dark:border-slate-900'
 
     const buttonToggleClass = highContrast
         ? 'border-2 border-black text-black hover:bg-black hover:text-white dark:border-white dark:text-white dark:hover:bg-white dark:hover:text-black'
-        : 'bg-white/10 text-white/80 hover:text-white hover:bg-white/20 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800'
+        : 'bg-gray-50 text-gray-500 hover:bg-gray-100 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800'
 
     return (
         <>
             {/* Overlay para telas mobile */}
             {isOpen && (
                 <div
-                    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 md:hidden"
+                    className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-30 md:hidden animate-fade-in"
                     onClick={() => setIsOpen(false)}
                 />
             )}
 
             {/* Sidebar Lateral */}
             <aside
-                className={`fixed left-0 top-0 h-screen flex flex-col justify-between p-6 transition-all duration-300 z-40 md:z-auto md:relative border-r border-transparent ${sidebarBgClass} ${
+                className={`fixed left-0 top-0 h-screen flex flex-col justify-between p-5 transition-all duration-300 z-40 md:z-auto md:relative ${sidebarBgClass} ${
                     isOpen 
                         ? 'translate-x-0 w-64' 
                         : '-translate-x-full md:translate-x-0 md:w-20 md:px-3'
                 }`}
             >
                 <div>
-                    {/* Header com logo + Botão de Recolher/Expandir */}
+                    {/* Header: Substituído o quadrado genérico pelo Logo original em formato de Cápsula */}
                     <div className={`flex items-center justify-between mb-8 ${!isOpen && 'md:flex-col md:gap-4 md:justify-center'}`}>
-                        <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-inner transition-colors ${
-                                highContrast 
-                                    ? 'bg-black text-white dark:bg-white dark:text-black border-2 border-current' 
-                                    : 'bg-white/10 dark:bg-slate-900 border border-white/10 dark:border-slate-800'
-                            }`}>
-                                <span className={`text-lg font-extrabold ${highContrast ? 'text-current' : 'text-white dark:text-secondary'}`}>A+</span>
+                        <div className="flex items-center gap-2.5">
+                            <div className="w-9 h-9 flex items-center justify-center overflow-hidden shrink-0">
+                                <img src={aroeLogo} alt="Aroê Logo" className="w-full h-full object-contain scale-125" />
                             </div>
-                            <span className={`text-xl font-bold tracking-tight text-current transition-all duration-200 ${
+                            <span className={`text-lg font-bold tracking-tight text-gray-900 dark:text-white transition-all duration-200 ${
                                 isOpen ? 'opacity-100 block' : 'md:opacity-0 md:hidden'
                             }`}>
                                 Aroê
                             </span>
                         </div>
 
-                        {/* Botão de abrir/fechar (Suporta click no desktop e mobile) */}
+                        {/* Botão Minimizar */}
                         <button
                             type="button"
                             onClick={() => setIsOpen(!isOpen)}
-                            className={`p-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary ${buttonToggleClass}`}
+                            className={`p-1.5 rounded-lg transition-colors focus:outline-none ${buttonToggleClass}`}
                             title={isOpen ? "Recolher menu lateral" : "Expandir menu lateral"}
                         >
-                            {isOpen ? <ChevronLeft size={18} /> : <Menu size={18} />}
+                            {isOpen ? <ChevronLeft size={16} /> : <Menu size={16} />}
                         </button>
                     </div>
 
                     {/* Menu principal */}
-                    <nav className="space-y-1.5">
+                    <nav className="space-y-1">
                         {MENU_ITEMS.map((item) => {
                             const Icon = item.icon
                             const active = isActive(item.to)
                             
-                            // Classes customizadas de item ativo/inativo para o Alto Contraste e Temas comuns
+                            // Estilo Clean: Item ativo ganha fundo suave e uma borda esquerda elegante
                             const activeClass = highContrast
                                 ? active 
                                     ? 'bg-black text-white dark:bg-white dark:text-black border-2 border-black dark:border-white font-black' 
                                     : 'text-black hover:bg-black/10 dark:text-white dark:hover:bg-white/10'
                                 : active
-                                    ? 'bg-white/15 text-white dark:bg-secondary/15 dark:text-secondary shadow-sm'
-                                    : 'text-white/70 hover:text-white hover:bg-white/5 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-900/50'
+                                    ? 'bg-purple-50/60 text-purple-700 border-l-4 border-purple-600 dark:bg-purple-950/20 dark:text-purple-400 dark:border-purple-400 font-semibold'
+                                    : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-900/60 border-l-4 border-transparent'
 
                             return (
                                 <Link
                                     key={item.to}
                                     to={item.to}
                                     onClick={() => window.innerWidth < 768 && setIsOpen(false)}
-                                    className={`flex items-center rounded-xl transition-all duration-200 font-medium text-sm group ${activeClass} ${
-                                        isOpen ? 'px-4 py-3 gap-3' : 'md:justify-center md:p-3'
+                                    className={`flex items-center rounded-r-xl transition-all duration-150 text-sm group ${activeClass} ${
+                                        isOpen ? 'px-3.5 py-2.5 gap-3' : 'md:justify-center md:py-3 md:px-0'
                                     }`}
                                     title={!isOpen ? item.label : undefined}
                                 >
                                     <Icon 
                                         size={18} 
-                                        className={`transition-transform group-hover:scale-105 shrink-0 ${
-                                            highContrast ? 'text-current' : active ? 'text-white dark:text-secondary' : 'text-white/70 dark:text-slate-400'
+                                        className={`transition-transform shrink-0 ${
+                                            highContrast 
+                                                ? 'text-current' 
+                                                : active 
+                                                    ? 'text-purple-600 dark:text-purple-400' 
+                                                    : 'text-gray-400 group-hover:text-gray-600 dark:text-slate-500 dark:group-hover:text-slate-400'
                                         }`} 
                                     />
                                     <span className={`transition-all duration-200 ${isOpen ? 'opacity-100 block' : 'md:opacity-0 md:hidden'}`}>
@@ -117,8 +120,8 @@ export default function DashboardSidebar({ isOpen, setIsOpen }) {
                                     </span>
                                     
                                     {item.badge && (
-                                        <span className={`bg-secondary text-white text-[10px] font-bold rounded-full shadow-sm shrink-0 ${
-                                            isOpen ? 'ml-auto px-2 py-0.5' : 'absolute md:top-2 md:right-2 px-1 py-0'
+                                        <span className={`bg-emerald-500 text-white text-[10px] font-bold rounded-full shadow-sm shrink-0 ${
+                                            isOpen ? 'ml-auto px-1.5 py-0.5' : 'absolute md:top-2 md:right-2 w-2 h-2 !p-0 overflow-hidden text-transparent'
                                         }`}>
                                             1
                                         </span>
@@ -129,8 +132,8 @@ export default function DashboardSidebar({ isOpen, setIsOpen }) {
                     </nav>
                 </div>
 
-                {/* Menu inferior ancorado embaixo */}
-                <nav className={`space-y-1.5 border-t pt-4 ${highContrast ? 'border-black/30 dark:border-white/30' : 'border-white/10 dark:border-slate-900'}`}>
+                {/* Menu inferior */}
+                <nav className={`space-y-1 border-t pt-4 ${highContrast ? 'border-black/30 dark:border-white/30' : 'border-gray-100 dark:border-slate-900'}`}>
                     {BOTTOM_MENU_ITEMS.map((item) => {
                         const Icon = item.icon
                         const active = isActive(item.to)
@@ -140,23 +143,27 @@ export default function DashboardSidebar({ isOpen, setIsOpen }) {
                                 ? 'bg-black text-white dark:bg-white dark:text-black border-2 border-black dark:border-white font-black' 
                                 : 'text-black hover:bg-black/10 dark:text-white dark:hover:bg-white/10'
                             : active
-                                ? 'bg-white/15 text-white dark:bg-secondary/15 dark:text-secondary'
-                                : 'text-white/70 hover:text-white hover:bg-white/5 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-900/50'
+                                ? 'bg-purple-50/60 text-purple-700 border-l-4 border-purple-600 dark:bg-purple-950/20 dark:text-purple-400 dark:border-purple-400 font-semibold'
+                                : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-900/60 border-l-4 border-transparent'
 
                         return (
                             <Link
                                 key={item.to}
                                 to={item.to}
                                 onClick={() => window.innerWidth < 768 && setIsOpen(false)}
-                                className={`flex items-center rounded-xl transition-all duration-200 font-medium text-sm group ${activeBottomClass} ${
-                                    isOpen ? 'px-4 py-3 gap-3' : 'md:justify-center md:p-3'
+                                className={`flex items-center rounded-r-xl transition-all duration-150 text-sm group ${activeBottomClass} ${
+                                    isOpen ? 'px-3.5 py-2.5 gap-3' : 'md:justify-center md:py-3 md:px-0'
                                 }`}
                                 title={!isOpen ? item.label : undefined}
                             >
                                 <Icon 
                                     size={18} 
-                                    className={`transition-transform group-hover:scale-105 shrink-0 ${
-                                        highContrast ? 'text-current' : active ? 'text-white dark:text-secondary' : 'text-white/70 dark:text-slate-400'
+                                    className={`transition-transform shrink-0 ${
+                                        highContrast 
+                                            ? 'text-current' 
+                                            : active 
+                                                ? 'text-purple-600 dark:text-purple-400' 
+                                                : 'text-gray-400 group-hover:text-gray-600 dark:text-slate-500 dark:group-hover:text-slate-400'
                                     }`} 
                                 />
                                 <span className={`transition-all duration-200 ${isOpen ? 'opacity-100 block' : 'md:opacity-0 md:hidden'}`}>

@@ -1,135 +1,151 @@
 /* eslint-disable react/prop-types */
-import { useState } from 'react'
-import { Menu, Search, LogOut, User, Settings, Sun, Moon } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
+import { Menu, Search, LogOut, User, Settings, Sun, Moon, Bell } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { useThemeContext } from '../../contexts/ThemeContext' // Ajuste o caminho do context conforme seu projeto
-import AccessibilityToolbar from '../../components/layout/AccessibilityToolbar' // Ajuste o caminho do toolbar conforme seu projeto
+import { useThemeContext } from '../../contexts/ThemeContext'
+import AccessibilityToolbar from '../../components/layout/AccessibilityToolbar'
 
 export default function DashboardHeader({ userName = 'Amanda', onMenuClick }) {
     const navigate = useNavigate()
     const { darkMode, toggleDarkMode } = useThemeContext()
     const [isProfileOpen, setIsProfileOpen] = useState(false)
+    const dropdownRef = useRef(null)
 
     const handleLogout = () => {
-        // Limpar dados da sessão aqui se necessário
         navigate('/login')
     }
 
+    // Fecha o dropdown se o usuário clicar fora dele (Boa prática de UX)
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsProfileOpen(false)
+            }
+        }
+        document.addEventListener('mousedown', handleClickOutside)
+        return () => document.removeEventListener('mousedown', handleClickOutside)
+    }, [])
+
     return (
-        <header className="bg-white dark:bg-slate-950 border-b border-gray-200 dark:border-slate-900 sticky top-0 z-20 transition-colors duration-500">
-            <div className="flex items-center justify-between px-6 py-4">
+        <header className="bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-100 dark:border-slate-900/60 sticky top-0 z-20 transition-all duration-300">
+            <div className="flex items-center justify-between px-6 py-3.5 max-w-7xl mx-auto w-full">
                 
-                {/* Left side - Menu mobile + greeting */}
+                {/* Left side - Menu mobile + Saudação mais intimista */}
                 <div className="flex items-center gap-4">
                     <button
                         onClick={onMenuClick}
-                        className="md:hidden p-2 hover:bg-gray-100 dark:hover:bg-slate-900 rounded-lg transition-colors text-slate-700 dark:text-slate-300"
+                        className="md:hidden p-2 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-xl transition-colors text-slate-600 dark:text-slate-400"
                     >
-                        <Menu size={24} />
+                        <Menu size={22} />
                     </button>
                     <div>
-                        <h1 className="text-xl sm:text-2xl font-bold text-primary dark:text-white transition-colors">
-                            Olá, {userName}!
+                        <h1 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
+                            Olá, {userName} ✨
                         </h1>
-                        <p className="text-xs sm:text-sm text-gray-500 dark:text-slate-400">
-                            Seu cuidado continua hoje
+                        <p className="text-xs text-slate-400 dark:text-slate-500 hidden sm:block">
+                            Seu painel de saúde e bem-estar
                         </p>
                     </div>
                 </div>
 
-                {/* Middle - Search (Desktop) */}
+                {/* Middle - Search Integrada (Sem bordas pesadas) */}
                 <div className="hidden md:flex flex-1 max-w-md mx-8">
                     <div className="w-full relative">
-                        <Search size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" />
+                        <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
                         <input
                             type="text"
-                            placeholder="Buscar"
-                            className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white border border-gray-200 dark:border-slate-800 rounded-lg focus:outline-none focus:border-secondary dark:focus:border-secondary transition-colors placeholder-gray-400 dark:placeholder-slate-500"
+                            placeholder="Buscar receitas, pedidos ou farmácias..."
+                            className="w-full pl-11 pr-4 py-2 bg-slate-50 dark:bg-slate-900/60 text-slate-900 dark:text-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 dark:focus:ring-purple-400/20 focus:bg-white dark:focus:bg-slate-900 transition-all text-sm placeholder-slate-400 dark:placeholder-slate-500"
                         />
                     </div>
                 </div>
 
-                {/* Right side - Controles Globais + Perfil */}
-                <div className="flex items-center gap-2 sm:gap-4">
+                {/* Right side - Controles e Perfil Organizado */}
+                <div className="flex items-center gap-1 sm:gap-3">
                     
-                    {/* Botão Dark Mode */}
+                    {/* Notificações (Adicionado para quebrar o visual puramente utilitário) */}
+                    <button className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900 transition-all">
+                        <Bell size={20} />
+                    </button>
+
+                    {/* Botão Alternador de Tema */}
                     <button
                         type="button"
                         onClick={toggleDarkMode}
-                        className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-900 transition-colors focus:outline-none focus:ring-2 focus:ring-secondary"
-                        title={darkMode ? "Ativar Modo Claro" : "Ativar Modo Escuro"}
+                        className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900 transition-all focus:outline-none"
+                        title={darkMode ? "Modo Claro" : "Modo Escuro"}
                     >
                         {darkMode ? <Sun size={20} /> : <Moon size={20} />}
                     </button>
 
-                    {/* Botão de Acessibilidade (Abrindo para baixo com segurança) */}
-                    <div className="text-slate-500 dark:text-slate-400">
+                    <div className="text-slate-400">
                         <AccessibilityToolbar position="down" />
                     </div>
 
-                    <div className="w-[1px] h-6 bg-gray-200 dark:bg-slate-800 mx-1 hidden sm:block" />
+                    <div className="w-[1px] h-5 bg-slate-200 dark:bg-slate-800 mx-1 hidden sm:block" />
 
-                    {/* Menu Perfil c/ Dropdown On Hover */}
-                    <div 
-                        className="relative"
-                        onMouseEnter={() => setIsProfileOpen(true)}
-                        onMouseLeave={() => setIsProfileOpen(false)}
-                    >
-                        {/* Gatilho do Perfil */}
-                        <button className="flex items-center gap-3 focus:outline-none group p-1 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-900 transition-colors">
-                            <div className="text-right hidden sm:block">
-                                <p className="text-sm font-semibold text-primary dark:text-slate-200 group-hover:text-secondary transition-colors">
-                                    {userName}
-                                </p>
-                                <p className="text-xs text-gray-500 dark:text-slate-400">Usuário</p>
-                            </div>
-                            
-                            {/* Avatar em formato de iniciais */}
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-primary/80 dark:from-secondary dark:to-secondary/80 flex items-center justify-center text-white font-bold shadow-sm">
-                                {userName.charAt(0).toUpperCase()}
+                    {/* Menu Perfil Controlado por Clique */}
+                    <div className="relative" ref={dropdownRef}>
+                        <button 
+                            onClick={() => setIsProfileOpen(!isProfileOpen)}
+                            className="flex items-center gap-3 focus:outline-none p-1 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-900 transition-all"
+                        >
+                            {/* Avatar Humano / Orgânico */}
+                            <div className="relative w-9 h-9 rounded-full bg-purple-100 dark:bg-purple-950 flex items-center justify-center overflow-hidden ring-2 ring-slate-100 dark:ring-slate-900">
+                                <img 
+                                    src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=80&h=80&q=80" 
+                                    alt={userName}
+                                    className="w-full h-full object-cover error-fallback-hidden"
+                                    onError={(e) => e.target.style.display = 'none'}
+                                />
+                                <span className="absolute text-sm font-bold text-purple-600 dark:text-purple-300 z-[-1]">
+                                    {userName.charAt(0).toUpperCase()}
+                                </span>
                             </div>
                         </button>
 
-                        {/* Dropdown Menu */}
-                        <div className={`absolute right-0 mt-1 w-48 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl shadow-lg py-2 z-50 transition-all duration-200 origin-top-right ${
+                        {/* Dropdown Menu com Animação Fluida */}
+                        <div className={`absolute right-0 mt-2 w-52 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-2xl shadow-xl shadow-slate-100 dark:shadow-none py-2 z-50 transition-all duration-200 origin-top-right ${
                             isProfileOpen 
                                 ? 'opacity-100 scale-100 translate-y-0 visible' 
                                 : 'opacity-0 scale-95 -translate-y-2 invisible pointer-events-none'
                         }`}>
-                            <div className="px-4 py-2 border-b border-gray-100 dark:border-slate-800 sm:hidden">
-                                <p className="text-sm font-semibold text-primary dark:text-white">{userName}</p>
-                                <p className="text-xs text-gray-500">Usuário</p>
+                            <div className="px-4 py-2.5 border-b border-slate-50 dark:border-slate-800/60">
+                                <p className="text-sm font-bold text-slate-800 dark:text-slate-200">{userName}</p>
+                                <p className="text-[11px] text-slate-400 dark:text-slate-500">Paciente Verificado</p>
                             </div>
 
-                            <button className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors text-left">
-                                <User size={16} /> Meu Perfil
-                            </button>
-                            
-                            <button className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors text-left">
-                                <Settings size={16} /> Configurações
-                            </button>
+                            <div className="p-1.5 space-y-0.5">
+                                <button className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-xl transition-colors text-left">
+                                    <User size={16} className="text-slate-400" /> Meu Perfil
+                                </button>
+                                
+                                <button className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-xl transition-colors text-left">
+                                    <Settings size={16} className="text-slate-400" /> Configurações
+                                </button>
 
-                            <div className="h-[1px] bg-gray-100 dark:bg-slate-800 my-1" />
+                                <div className="h-[1px] bg-slate-100 dark:bg-slate-800/60 my-1 mx-1" />
 
-                            <button 
-                                onClick={handleLogout}
-                                className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors text-left font-medium"
-                            >
-                                <LogOut size={16} /> Sair da conta
-                            </button>
+                                <button 
+                                    onClick={handleLogout}
+                                    className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-xl transition-colors text-left font-medium"
+                                >
+                                    <LogOut size={16} /> Sair do Painel
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* Mobile Search */}
-            <div className="md:hidden px-6 pb-4">
+            {/* Mobile Search - Segue o mesmo padrão clean */}
+            <div className="md:hidden px-6 pb-3.5">
                 <div className="relative">
-                    <Search size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" />
+                    <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
                     <input
                         type="text"
-                        placeholder="Buscar"
-                        className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white border border-gray-200 dark:border-slate-800 rounded-lg focus:outline-none focus:border-secondary dark:focus:border-secondary transition-colors placeholder-gray-400 dark:placeholder-slate-500"
+                        placeholder="Buscar receitas ou pedidos..."
+                        className="w-full pl-11 pr-4 py-2 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 dark:focus:ring-purple-400/20 transition-all text-sm"
                     />
                 </div>
             </div>
