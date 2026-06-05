@@ -19,6 +19,7 @@ import DashboardNotificacoes from './pages/Dashboard/sections/Notificacoes'
 import DashboardHistorico from './pages/Dashboard/sections/Historico'
 import DashboardConfiguracoes from './pages/Dashboard/sections/Configuracoes'
 import DashboardAjuda from './pages/Dashboard/sections/Ajuda'
+import AriaIA from './pages/Dashboard/sections/AriaIA';
 
 function App() {
   const location = useLocation()
@@ -51,6 +52,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />}>
           <Route index element={<DashboardHome />} />
           <Route path="receitas" element={<DashboardReceitas />} />
+          <Route path="aria" element={<AriaIA />} />
           <Route path="pedidos" element={<DashboardPedidos />} />
           <Route path="tratamentos" element={<DashboardTratamentos />} />
           <Route path="lembretes" element={<DashboardLembretes />} />
