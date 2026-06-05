@@ -1,13 +1,15 @@
 import { useState, useEffect, useRef } from "react";
 import { 
-  Info, Volume2, VolumeX, Trash2, Mic, MicOff, 
-  Paperclip, ImagePlus, Send, Sparkles, Heart, 
-  ShieldCheck, FileText, Pill, Clock, Activity, HelpCircle 
+  Volume2, VolumeX, Trash2, Mic, MicOff, 
+  Paperclip, ImagePlus, Send, Sparkles, 
+  ShieldCheck, FileText, Clock, Activity, 
+  BadgeDollarSign
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
-// Caminho da imagem da Ária (Certifique-se de salvar a imagem na sua pasta de assets)
-import ariaAvatar from "/pill-mascot2.png"; 
+import ariaAvatar from "/pill-mascot3.png"; 
 
+// --- CONFIGURAÇÕES E MAPAS DE DADOS (Isolados para reduzir complexidade) ---
 const ariaQuickQuestions = [
   "Enviar receita médica",
   "Status do meu pedido",
@@ -19,78 +21,83 @@ const ariaQuickQuestions = [
 const aboutAriaCards = [
   {
     title: "O que é a Ária?",
-    text: "A Ária é a assistente inteligente da Aroê. Ela traduz receitas complexas e ajuda você a gerenciar seus tratamentos e fórmulas manipuladas de forma simples.",
+    text: "A Ária é a assistente inteligente da Aroê. Ela traduz receitas complexas e ajuda você a gerenciar seus tratamentos.",
     icon: Sparkles,
+    color: "text-purple-500 bg-purple-50 dark:bg-purple-950/30",
   },
   {
     title: "Como ela funciona?",
-    text: "Ela analisa suas receitas enviadas, organiza seus horários de medicamentos e busca as melhores cotações nas farmácias parceiras de forma automatizada.",
-    icon: Sparkles,
-  },
-  {
-    title: "Como ajuda a economizar?",
-    text: "A Ária cruza orçamentos de laboratórios de manipulação confiáveis para encontrar o menor preço e os melhores descontos para a sua fórmula.",
-    icon: Heart,
-  },
-  {
-    title: "O que ela analisa?",
-    text: "Composições de receitas médicas, prazos de entrega de pedidos, cronogramas de tratamentos contínuos e notificações de horários.",
-    icon: FileText,
-  },
-  {
-    title: "Benefícios para o usuário",
-    text: "Mais clareza sobre suas dosagens, alertas inteligentes para não esquecer o remédio, histórico médico unificado e economia garantida em fórmulas.",
-    icon: Pill,
+    text: "Ela analisa suas receitas enviadas, organiza seus horários e busca as melhores cotações nas farmácias parceiras.",
+    icon: Activity,
+    color: "text-emerald-500 bg-emerald-50 dark:bg-emerald-950/30",
   },
   {
     title: "Segurança e privacidade",
-    text: "Seus dados de saúde e receitas receitas médicas são totalmente confidenciais e criptografados. Suas informações nunca são exibidas fora do seu painel seguro.",
+    text: "Seus dados de saúde e receitas médicas são totalmente confidenciais, criptografados e protegidos.",
     icon: ShieldCheck,
+    color: "text-teal-500 bg-teal-50 dark:bg-teal-950/30",
   },
   {
     title: "Tratamentos e Fórmulas",
-    text: "A Ária acompanha o ciclo de uso do seu medicamento e avisa o momento ideal de solicitar uma nova manipulação antes que o seu pote acabe.",
+    text: "Acompanha o ciclo do seu medicamento e avisa o momento ideal de solicitar uma nova manipulação.",
     icon: Clock,
-  },
-  {
-    title: "Exemplos de perguntas",
-    text: "Pergunte sobre status de entrega, alertas de horários, envio de novas receitas manipuladas, valores ou dúvidas de uso da plataforma.",
-    icon: Info,
+    color: "text-indigo-500 bg-indigo-50 dark:bg-indigo-950/30",
   },
 ];
 
+// Mapeamento de intenções por palavras-chave (Evita a cascata de if/else)
+const INTENT_RESPONSES = [
+  {
+    keywords: ["receita", "enviar", "mandar"],
+    response: "Para enviar uma nova receita, basta clicar no ícone de clipe ou câmera aqui embaixo no chat, ou usar o botão 'Enviar nova receita' na sua página inicial. Nossa equipe vai digitalizar e cotar em até 3 laboratórios parceiros."
+  },
+  {
+    keywords: ["status", "pedido", "onde está", "entrega"],
+    response: "Seu pedido atual de 'Vitaminas A-Z (Fórmula manipulada)' já foi recebido e está na etapa 'Em Produção'. A previsão de envio é próxima semana. Você receberá uma notificação assim que ele sair para entrega!"
+  },
+  {
+    keywords: ["lembrete", "horário", "remedio", "remédio"],
+    response: "Para configurar seus alarmes, acesse a aba 'Lembretes' no menu lateral. Lá você pode definir o nome do medicamento, de quantas em quantas horas precisa tomar e a Ária te notificará no painel ou SMS."
+  },
+  {
+    keywords: ["dica", "bem-estar", "saude", "saúde"],
+    response: "Lembre-se de que a constância é o segredo do tratamento manipulado! Tente tomar seus suplementos e vitaminas sempre no mesmo horário, preferencialmente junto às principais refeições para melhorar a absorção."
+  },
+  {
+    keywords: ["orçamento", "preço", "valor", "desconto"],
+    response: "Atualmente você possui 3 orçamentos disponíveis para a sua receita. O melhor valor encontrado foi na 'Farmácia Bem Viver' por R$ 43,50, já aplicando o seu cupom de desconto de primeira compra."
+  }
+];
+
+// --- FUNÇÕES UTILIÁRIAS PURAS ---
 function getNowTime() {
-  return new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit" }).format(
-    new Date(),
-  );
+  return new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit" }).format(new Date());
 }
 
 function getAriaAnswer(question) {
   const text = question.toLowerCase();
-  if (text.includes("receita") || text.includes("enviar") || text.includes("mandar")) {
-    return "Para enviar uma nova receita, basta clicar no ícone de clipe ou câmera aqui embaixo no chat, ou usar o botão 'Enviar nova receita' na sua página inicial. Nossa equipe vai digitalizar e cotar em até 3 laboratórios parceiros.";
-  }
-  if (text.includes("status") || text.includes("pedido") || text.includes("onde está") || text.includes("entrega")) {
-    return "Seu pedido atual de 'Vitaminas A-Z (Fórmula manipulada)' já foi recebido e está na etapa 'Em Produção'. A previsão de envio é próxima semana. Você receberá uma notificação assim que ele sair para entrega!";
-  }
-  if (text.includes("lembrete") || text.includes("horário") || text.includes("remedio") || text.includes("remédio")) {
-    return "Para configurar seus alarmes, acesse a aba 'Lembretes' no menu lateral. Lá você pode definir o nome do medicamento, de quantas em quantas horas precisa tomar e a Ária te notificará no painel ou SMS.";
-  }
-  if (text.includes("dica") || text.includes("bem-estar") || text.includes("saude") || text.includes("saúde")) {
-    return "Lembre-se de que a constância é o segredo do tratamento manipulado! Tente tomar seus suplementos e vitaminas sempre no mesmo horário, preferencialmente junto às principais refeições para melhorar a absorção.";
-  }
-  if (text.includes("orçamento") || text.includes("preço") || text.includes("valor") || text.includes("desconto")) {
-    return "Atualmente você possui 3 orçamentos disponíveis para a sua receita. O melhor valor encontrado foi na 'Farmácia Bem Viver' por R$ 43,50, já aplicando o seu cupom de desconto de primeira compra.";
-  }
-  return "Entendi perfeitamente. Como sua assistente de saúde Aroê, posso te ajudar a acompanhar seus pedidos em andamento, tirar dúvidas sobre envio de receitas, criar lembretes de dosagem ou conferir orçamentos.";
+  const matched = INTENT_RESPONSES.find(intent => 
+    intent.keywords.some(keyword => text.includes(keyword))
+  );
+  return matched ? matched.response : "Entendi perfeitamente. Como sua assistente de saúde Aroê, posso te ajudar a acompanhar seus pedidos em andamento, tirar dúvidas sobre envio de receitas, criar lembretes de dosagem ou conferir orçamentos.";
 }
 
+function pickFemaleVoice(voices) {
+  return (
+    voices.find((v) => /maria|helena|heloisa|luciana|francisca|manuela|vitória|vitoria|catarina|joana|raquel|female|feminina|mulher/i.test(`${v.name} ${v.lang}`)) ||
+    voices.find((v) => v.lang?.toLowerCase() === "pt-br" && !/male|masculina|homem/i.test(v.name)) ||
+    voices.find((v) => v.lang?.toLowerCase() === "pt-br")
+  );
+}
+
+// --- COMPONENTE PRINCIPAL ---
 export default function AriaIAContent() {
   const [tab, setTab] = useState("chat");
   const [input, setInput] = useState("");
-  const [audioEnabled, setAudioEnabled] = useState(true);
+  const [audioEnabled, setAudioEnabled] = useState(false);
   const [listening, setListening] = useState(false);
   const [speaking, setSpeaking] = useState(false);
+  
   const recognitionRef = useRef(null);
   const fileInputRef = useRef(null);
   const imageInputRef = useRef(null);
@@ -98,23 +105,19 @@ export default function AriaIAContent() {
   
   const [messages, setMessages] = useState(() => {
     if (typeof window === "undefined") return [];
-    const saved = localStorage.getItem("aroe_aria_chat");
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch { /* empty */ }
-    }
-    return [
-      {
-        id: 1,
-        role: "aria",
-        text: "Olá! Eu sou a Ária, sua assistente virtual da Aroê. Estou aqui para cuidar do seu bem-estar. Posso ajudar com suas receitas, status de pedidos, lembretes de medicamentos e orçamentos.",
-        time: getNowTime(),
-      },
-    ];
+    try {
+      const saved = localStorage.getItem("aroe_aria_chat");
+      if (saved) return JSON.parse(saved);
+    } catch { /* fallback silencioso */ }
+    return [{
+      id: 1,
+      role: "aria",
+      text: "Olá! Eu sou a Ária, sua assistente virtual da Aroê. Estou aqui para cuidar do seu bem-estar. Posso ajudar com suas receitas, status de pedidos, lembretes de medicamentos e orçamentos.",
+      time: getNowTime(),
+    }];
   });
 
-  // CORREÇÃO DO MUDO: Cancela o áudio imediatamente se o botão for desativado
+  // Efeitos colaterais simplificados
   useEffect(() => {
     if (!audioEnabled && typeof window !== "undefined" && "speechSynthesis" in window) {
       globalThis.speechSynthesis.cancel();
@@ -123,41 +126,30 @@ export default function AriaIAContent() {
   }, [audioEnabled]);
 
   useEffect(() => {
-    if (typeof window !== "undefined")
+    if (typeof window !== "undefined") {
       localStorage.setItem("aroe_aria_chat", JSON.stringify(messages));
+    }
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages]);
 
-  const pickFemaleVoice = () => {
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) return undefined;
-    const voices = window.speechSynthesis.getVoices();
-    return (
-      voices.find((voice) =>
-        /maria|helena|heloisa|luciana|francisca|manuela|vitória|vitoria|catarina|joana|raquel|female|feminina|mulher/i.test(
-          `${voice.name} ${voice.lang}`,
-        )
-      ) ||
-      voices.find((voice) => voice.lang?.toLowerCase() === "pt-br" && !/male|masculina|homem/i.test(voice.name)) ||
-      voices.find((voice) => voice.lang?.toLowerCase() === "pt-br")
-    );
-  };
-
   useEffect(() => {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
-    window.speechSynthesis.getVoices();
-    window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
-    return () => {
-      window.speechSynthesis.onvoiceschanged = null;
-    };
+    const updateVoices = () => window.speechSynthesis.getVoices();
+    window.speechSynthesis.onvoiceschanged = updateVoices;
+    return () => { window.speechSynthesis.onvoiceschanged = null; };
   }, []);
 
+  // Handlers de Ações
   const speak = (text) => {
     if (!audioEnabled || typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "pt-BR";
-    const selectedVoice = pickFemaleVoice();
+    
+    const selectedVoice = pickFemaleVoice(window.speechSynthesis.getVoices());
     if (selectedVoice) utterance.voice = selectedVoice;
+    
     utterance.rate = 0.98;
     utterance.pitch = 1.25; 
     utterance.onstart = () => setSpeaking(true);
@@ -170,22 +162,12 @@ export default function AriaIAContent() {
     const question = (text ?? input).trim();
     if (!question) return;
     
-    const userMessage = {
-      id: Date.now(),
-      role: "user",
-      text: question,
-      time: getNowTime(),
-    };
-    
     const answerText = getAriaAnswer(question);
-    const answer = {
-      id: Date.now() + 1,
-      role: "aria",
-      text: answerText,
-      time: getNowTime(),
-    };
-    
-    setMessages((current) => [...current, userMessage, answer]);
+    setMessages((current) => [
+      ...current,
+      { id: Date.now(), role: "user", text: question, time: getNowTime() },
+      { id: Date.now() + 1, role: "aria", text: answerText, time: getNowTime() }
+    ]);
     setInput("");
     setTimeout(() => speak(answerText), 120);
   };
@@ -193,17 +175,17 @@ export default function AriaIAContent() {
   const startListening = () => {
     if (typeof window === "undefined") return;
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    
     if (!SpeechRecognition) {
-      const msg = "Seu navegador não suporta o reconhecimento de voz. Por favor, digite sua dúvida.";
+      const msg = "Seu navegador não suporta o reconhecimento de voz.";
       setMessages((current) => [...current, { id: Date.now(), role: "aria", text: msg, time: getNowTime() }]);
-      speak(msg);
       return;
     }
+    
     if (recognitionRef.current) recognitionRef.current.stop();
+    
     const recognition = new SpeechRecognition();
     recognition.lang = "pt-BR";
-    recognition.interimResults = false;
-    recognition.continuous = false;
     recognition.onstart = () => setListening(true);
     recognition.onend = () => setListening(false);
     recognition.onerror = () => setListening(false);
@@ -212,26 +194,27 @@ export default function AriaIAContent() {
       setInput(transcript);
       if (transcript) setTimeout(() => sendMessage(transcript), 180);
     };
+    
     recognitionRef.current = recognition;
     recognition.start();
   };
 
   const clearChat = () => {
-    const initial = {
+    setMessages([{
       id: Date.now(),
       role: "aria",
       text: "Histórico limpo. Pode me perguntar novamente sobre receitas, medicamentos, status de manipulação ou orçamentos.",
       time: getNowTime(),
-    };
-    setMessages([initial]);
-    speak(initial.text);
+    }]);
   };
 
   const handleAttachment = (type, files) => {
     const file = files?.[0];
     if (!file) return;
-    const userText = type === "imagem" ? `Foto enviada: ${file.name}` : `Documento digitalizado: ${file.name}`;
-    const answerText = type === "imagem" 
+
+    const isImage = type === "imagem";
+    const userText = isImage ? `Foto enviada: ${file.name}` : `Documento digitalizado: ${file.name}`;
+    const answerText = isImage 
       ? "Recebi a foto do seu documento de saúde. Nossa equipe médica e farmacêutica vai realizar a leitura dos compostos para gerar suas opções de orçamento!"
       : "Recebi seu arquivo digital. Vou extrair os dados da receita e anexar ao seu perfil para iniciar as cotações nas farmácias parceiras.";
     
@@ -244,176 +227,243 @@ export default function AriaIAContent() {
   };
 
   return (
-    <section className={`aria-ia-page aria-tab-${tab} p-1`} aria-label="Ária IA">
-      <div className="flex border-b border-gray-100 dark:border-slate-800 gap-4 mb-4" role="tablist">
-        <button
-          type="button"
-          className={`pb-2 text-sm font-bold flex items-center gap-2 border-b-2 transition-colors ${tab === "chat" ? "border-primary text-primary dark:border-secondary dark:text-secondary" : "border-transparent text-gray-400"}`}
-          onClick={() => setTab("chat")}
-          role="tab"
-          aria-selected={tab === "chat"}
-        >
-          {/* Mudado de Bot para imagem miniatura da Ária */}
-          <img src={ariaAvatar} alt="" className="w-5 h-5 object-contain" /> Chat Ária
-        </button>
-        <button
-          type="button"
-          className={`pb-2 text-sm font-bold flex items-center gap-2 border-b-2 transition-colors ${tab === "about" ? "border-primary text-primary dark:border-secondary dark:text-secondary" : "border-transparent text-gray-400"}`}
-          onClick={() => setTab("about")}
-          role="tab"
-          aria-selected={tab === "about"}
-        >
-          <Info size={18} /> Conhecer a Ária
-        </button>
-      </div>
+    <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-purple-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 min-h-screen transition-colors duration-500 p-4 sm:p-6 lg:p-8 flex flex-col justify-center">
+      <div className="absolute top-20 left-10 w-72 h-72 bg-purple-400/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-10 right-10 w-72 h-72 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none" />
 
-      {tab === "chat" ? (
-        <div className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl shadow-sm flex flex-col h-[calc(100vh-180px)]">
-          {/* Header do Chat com imagem da Ária */}
-          <div className="p-4 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between bg-gray-50/50 dark:bg-slate-900/50 rounded-t-2xl">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 flex items-center justify-center overflow-hidden">
-                <img src={ariaAvatar} alt="Ária Avatar" className="w-9 h-9 object-contain" />
+      <div className="relative max-w-7xl mx-auto w-full flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
+        
+        {/* COLUNA ESQUERDA: IA FLUTUANDO */}
+        <div className="w-full lg:w-[45%] flex flex-col justify-center items-center relative py-6 lg:py-0">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="relative w-full max-w-sm sm:max-w-md lg:max-w-lg flex items-center justify-center min-h-[360px] sm:min-h-[440px]"
+          >
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 lg:w-80 lg:h-80 rounded-full bg-gradient-to-r from-purple-500/20 to-emerald-400/20 blur-3xl z-0" />
+
+            <motion.img
+              src={ariaAvatar}
+              alt="Mascote Ária"
+              className="relative z-10 w-3/4 h-auto object-contain max-h-[380px]"
+              animate={{
+                y: listening ? [0, -8, 0] : [0, -18, 0],
+                scale: speaking ? [1, 1.03, 1] : 1
+              }}
+              transition={{
+                duration: listening ? 1.5 : 5,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            />
+
+            <motion.div
+              animate={{ y: [0, -8, 0] }}
+              transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute top-6 left-2 sm:-left-4 z-20 backdrop-blur-xl bg-white/80 dark:bg-slate-900/85 border border-slate-200/60 dark:border-slate-800 rounded-2xl px-4 py-3 shadow-xl flex items-center gap-2.5"
+            >
+              <div className="w-8 h-8 rounded-full bg-purple-50 dark:bg-purple-950/50 flex items-center justify-center text-purple-600 dark:text-purple-400">
+                <FileText size={16} />
               </div>
               <div>
-                <h2 className="font-bold text-gray-900 dark:text-white text-base">Ária</h2>
-                <p className="text-xs text-gray-500 dark:text-slate-400">
-                  {listening ? "Ouvindo sua voz..." : speaking ? "Ária falando..." : "Sua Inteligência de Saúde"}
+                <p className="text-[10px] uppercase font-bold tracking-wider text-slate-400">Análise de Receitas</p>
+                <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">Leitura Inteligente por Foto/PDF</p>
+              </div>
+            </motion.div>
+
+            <motion.div
+              animate={{ y: [0, 10, 0] }}
+              transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute top-1/3 -right-2 sm:-right-6 z-20 backdrop-blur-xl bg-white/80 dark:bg-slate-900/85 border border-slate-200/60 dark:border-slate-800 rounded-2xl px-4 py-3 shadow-xl flex items-center gap-2.5"
+            >
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${listening ? "bg-red-500 text-white animate-pulse" : "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400"}`}>
+                {listening ? <Mic size={15} /> : <ShieldCheck size={15} />}
+              </div>
+              <div>
+                <p className="text-[10px] uppercase font-bold tracking-wider text-slate-400">Interação</p>
+                <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                  {listening ? "Ouvindo comandos..." : "Voz Ativada por Clique"}
                 </p>
               </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                className={`p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-800 ${audioEnabled ? "text-primary dark:text-secondary" : ""}`}
-                onClick={() => setAudioEnabled((v) => !v)}
-                aria-label={audioEnabled ? "Mutar Ária" : "Ativar Voz da Ária"}
-              >
-                {audioEnabled ? <Volume2 size={18} /> : <VolumeX size={18} />}
-              </button>
-              <button 
-                type="button" 
-                className="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30" 
-                onClick={clearChat} 
-              >
-                <Trash2 size={17} />
-              </button>
-            </div>
+            </motion.div>
+
+            <motion.div
+              animate={{ y: [0, -6, 0] }}
+              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute bottom-6 left-6 z-20 backdrop-blur-xl bg-white/80 dark:bg-slate-900/85 border border-slate-200/60 dark:border-slate-800 rounded-2xl px-4 py-3 shadow-xl flex items-center gap-2.5"
+            >
+              <div className="w-8 h-8 rounded-full bg-amber-50 dark:bg-amber-950/50 flex items-center justify-center text-amber-500">
+                <BadgeDollarSign size={16} />
+              </div>
+              <div>
+                <p className="text-[10px] uppercase font-bold tracking-wider text-slate-400">Cotação integrada</p>
+                <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">Menor preço mapeado</p>
+              </div>
+            </motion.div>
+          </motion.div>
+        </div>
+
+        {/* COLUNA DIREITA: PAINEL DO CHAT */}
+        <div className="w-full lg:w-[55%] flex flex-col justify-center">
+          <div className="flex border-b border-slate-100 dark:border-slate-800/60 gap-6 mb-4" role="tablist">
+            <button
+              type="button"
+              className={`pb-2.5 text-xs font-bold uppercase tracking-wider border-b-2 transition-all ${tab === "chat" ? "border-purple-600 text-purple-600 dark:border-purple-400 dark:text-purple-400" : "border-transparent text-slate-400 hover:text-slate-600"}`}
+              onClick={() => setTab("chat")}
+              role="tab"
+              aria-selected={tab === "chat"}
+            >
+              Assistente Virtual
+            </button>
+            <button
+              type="button"
+              className={`pb-2.5 text-xs font-bold uppercase tracking-wider border-b-2 transition-all ${tab === "about" ? "border-purple-600 text-purple-600 dark:border-purple-400 dark:text-purple-400" : "border-transparent text-slate-400 hover:text-slate-600"}`}
+              onClick={() => setTab("about")}
+              role="tab"
+              aria-selected={tab === "about"}
+            >
+              Recursos Avançados
+            </button>
           </div>
 
-          {/* Mensagens do Chat */}
-          <div className="flex-1 p-4 overflow-y-auto space-y-4">
-            {messages.map((message) => (
-              <article 
-                className={`flex flex-col max-w-[80%] ${message.role === "aria" ? "self-start items-start" : "self-end items-end ml-auto"}`} 
-                key={message.id}
+          <AnimatePresence mode="wait">
+            {tab === "chat" ? (
+              <motion.div
+                key="chat-tab"
+                initial={{ opacity: 0, x: 15 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -15 }}
+                className="bg-white/80 dark:bg-slate-950/40 backdrop-blur-md border border-slate-200/50 dark:border-slate-900 rounded-3xl shadow-2xl flex flex-col h-[520px] overflow-hidden"
               >
-                <span className="text-[11px] font-bold text-gray-400 mb-1">
-                  {message.role === "aria" ? "Ária • Aroê" : "Você"}
-                </span>
-                <div className={`p-3.5 rounded-2xl text-sm ${
-                  message.role === "aria" 
-                    ? "bg-gray-100 dark:bg-slate-800 text-gray-800 dark:text-slate-100 rounded-tl-none" 
-                    : "bg-primary dark:bg-secondary text-white rounded-tr-none"
-                }`}>
-                  <p className="leading-relaxed whitespace-pre-line">{message.text}</p>
+                {/* Header */}
+                <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-900/60 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></span>
+                    <h3 className="text-sm font-bold text-slate-800 dark:text-white">Ária Inteligência de Saúde</h3>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 bg-slate-100/60 dark:bg-slate-900 p-1 rounded-xl">
+                    <button
+                      type="button"
+                      title={audioEnabled ? "Desativar voz" : "Ativar voz"}
+                      className={`p-1.5 rounded-lg text-slate-400 hover:text-purple-600 transition-all ${audioEnabled ? "text-purple-600 bg-white dark:bg-slate-800 shadow-xs" : ""}`}
+                      onClick={() => setAudioEnabled((v) => !v)}
+                    >
+                      {audioEnabled ? <Volume2 size={15} /> : <VolumeX size={15} />}
+                    </button>
+                    <button type="button" className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 transition-colors" onClick={clearChat}>
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
                 </div>
-                <time className="text-[10px] text-gray-400 mt-1 block">{message.time}</time>
-              </article>
-            ))}
-            <div ref={messagesEndRef} />
-          </div>
 
-          {/* Input */}
-          <div className="p-4 border-t border-gray-100 dark:border-slate-800 bg-gray-50/30 dark:bg-slate-900/30 rounded-b-2xl">
-            <div className="flex gap-2 overflow-x-auto pb-3 mb-3 border-b border-gray-100 dark:border-slate-800/60 scrollbar-none">
-              {ariaQuickQuestions.map((question, index) => {
-                const icons = [FileText, Clock, Pill, Activity, HelpCircle];
-                const Icon = icons[index] || HelpCircle;
-                return (
-                  <button 
-                    type="button" 
-                    key={question} 
-                    onClick={() => sendMessage(question)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-full text-xs font-medium text-gray-600 dark:text-slate-300 whitespace-nowrap hover:border-primary dark:hover:border-secondary transition-colors"
-                  >
-                    <Icon size={13} className="text-gray-400" /> {question}
-                  </button>
-                );
-              })}
-            </div>
+                {/* Mensagens */}
+                <div className="flex-1 px-6 py-4 overflow-y-auto space-y-4 scrollbar-none">
+                  {messages.map((message) => (
+                    <div 
+                      key={message.id}
+                      className={`flex flex-col max-w-[85%] ${message.role === "aria" ? "self-start items-start" : "self-end items-end ml-auto"}`}
+                    >
+                      <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed shadow-xs ${
+                        message.role === "aria" 
+                          ? "bg-slate-100/80 dark:bg-slate-900 text-slate-800 dark:text-slate-200 rounded-tl-xs" 
+                          : "bg-purple-600 text-white rounded-tr-xs"
+                      }`}>
+                        <p className="whitespace-pre-line text-xs sm:text-sm">{message.text}</p>
+                      </div>
+                      <time className="text-[10px] text-slate-400 mt-1 px-1">{message.time}</time>
+                    </div>
+                  ))}
+                  <div ref={messagesEndRef} />
+                </div>
 
-            <form className="flex items-center gap-2" onSubmit={(e) => { e.preventDefault(); sendMessage(); }}>
-              <button
-                type="button"
-                className={`p-2.5 rounded-xl transition-all ${listening ? "bg-red-500 text-white animate-pulse" : "bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300"}`}
-                onClick={startListening}
-              >
-                {listening ? <MicOff size={18} /> : <Mic size={18} />}
-              </button>
-              <button
-                type="button"
-                className="p-2.5 rounded-xl bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:text-primary dark:hover:text-secondary"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <Paperclip size={18} />
-              </button>
-              <button
-                type="button"
-                className="p-2.5 rounded-xl bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:text-primary dark:hover:text-secondary"
-                onClick={() => imageInputRef.current?.click()}
-              >
-                <ImagePlus size={18} />
-              </button>
-              
-              <input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Pergunte sobre receitas, medicamentos ou cotações..."
-                className="flex-1 bg-gray-100 dark:bg-slate-800 border-none rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-secondary text-gray-900 dark:text-white"
-              />
-              
-              <button type="submit" className="p-2.5 rounded-xl bg-primary dark:bg-secondary text-white hover:opacity-90">
-                <Send size={18} />
-              </button>
-
-              <input ref={fileInputRef} type="file" className="hidden" onChange={(e) => handleAttachment("arquivo", e.target.files)} />
-              <input ref={imageInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => handleAttachment("imagem", e.target.files)} />
-            </form>
-          </div>
-        </div>
-      ) : (
-        /* Aba "Sobre a Ária" com a imagem em Destaque */
-        <div className="space-y-8 max-w-4xl mx-auto py-4">
-          <div className="text-center space-y-3">
-            <div className="w-24 h-24 flex items-center justify-center mx-auto drop-shadow-md">
-              <img src={ariaAvatar} alt="Ária 3D" className="w-full h-full object-contain" />
-            </div>
-            <span className="text-xs font-bold uppercase tracking-widest text-primary dark:text-secondary">Conheça a Ária</span>
-            <h2 className="text-2xl font-black text-gray-900 dark:text-white">Seus tratamentos organizados de forma inteligente.</h2>
-            <p className="text-sm text-gray-600 dark:text-slate-400 max-w-xl mx-auto">
-              A Ária analisa receitas médicas complexas de fórmulas manipuladas e as transforma em orientações simples, cronogramas de dosagem e cotações fáceis.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {aboutAriaCards.map((card) => {
-              const Icon = card.icon;
-              return (
-                <article key={card.title} className="p-4 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl flex gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-gray-50 dark:bg-slate-800 flex items-center justify-center shrink-0 text-primary dark:text-secondary">
-                    <Icon size={20} />
+                {/* Footer Inputs */}
+                <div className="p-4 bg-white/40 dark:bg-slate-950/40 border-t border-slate-100 dark:border-slate-900/60">
+                  <div className="flex gap-2 overflow-x-auto pb-3 mb-2 scrollbar-none">
+                    {ariaQuickQuestions.map((question) => (
+                      <button 
+                        type="button" 
+                        key={question} 
+                        onClick={() => sendMessage(question)}
+                        className="px-3 py-1.5 bg-white dark:bg-slate-900 hover:bg-purple-50 hover:text-purple-600 dark:hover:bg-purple-950/30 dark:hover:text-purple-400 border border-slate-200/60 dark:border-slate-800 text-slate-600 dark:text-slate-400 rounded-full text-xs font-medium whitespace-nowrap transition-all shadow-2xs"
+                      >
+                        {question}
+                      </button>
+                    ))}
                   </div>
-                  <div className="space-y-1">
-                    <h4 className="font-bold text-sm text-gray-900 dark:text-white">{card.title}</h4>
-                    <p className="text-xs text-gray-500 dark:text-slate-400 leading-relaxed">{card.text}</p>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
+
+                  <form className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-900 p-1.5 rounded-2xl border border-slate-200/40 dark:border-slate-800 focus-within:border-purple-500/40 transition-all" onSubmit={(e) => { e.preventDefault(); sendMessage(); }}>
+                    <div className="flex items-center">
+                      <button
+                        type="button"
+                        title="Fale com a Ária"
+                        className={`p-2 rounded-xl transition-all ${listening ? "bg-red-500 text-white animate-pulse" : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800"}`}
+                        onClick={startListening}
+                      >
+                        {listening ? <MicOff size={15} /> : <Mic size={15} />}
+                      </button>
+                      <button
+                        type="button"
+                        className="p-2 rounded-xl text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-gray-200/50 dark:hover:bg-slate-800 transition-colors"
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        <Paperclip size={15} />
+                      </button>
+                      <button
+                        type="button"
+                        className="p-2 rounded-xl text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-gray-200/50 dark:hover:bg-slate-800 transition-colors"
+                        onClick={() => imageInputRef.current?.click()}
+                      >
+                        <ImagePlus size={15} />
+                      </button>
+                    </div>
+
+                    <input
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      placeholder="Converse com a Ária..."
+                      className="flex-1 bg-transparent border-none outline-none text-xs sm:text-sm text-slate-900 dark:text-white px-2 placeholder-slate-400"
+                    />
+
+                    <button type="submit" className="p-2 rounded-xl bg-purple-600 dark:bg-purple-500 text-white hover:opacity-95 shadow-xs shrink-0 transition-opacity">
+                      <Send size={15} />
+                    </button>
+
+                    <input ref={fileInputRef} type="file" className="hidden" onChange={(e) => handleAttachment("arquivo", e.target.files)} />
+                    <input ref={imageInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => handleAttachment("imagem", e.target.files)} />
+                  </form>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="about-tab"
+                initial={{ opacity: 0, x: -15 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 15 }}
+                className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+              >
+                {aboutAriaCards.map((card) => {
+                  const Icon = card.icon;
+                  return (
+                    <article key={card.title} className="p-5 bg-white/80 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200/50 dark:border-slate-800 rounded-3xl flex flex-col gap-3 shadow-xs">
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${card.color}`}>
+                        <Icon size={16} />
+                      </div>
+                      <div className="space-y-1">
+                        <h4 className="font-bold text-sm text-slate-900 dark:text-white">{card.title}</h4>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">{card.text}</p>
+                      </div>
+                    </article>
+                  );
+                })}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-      )}
+
+      </div>
     </section>
   );
 }
