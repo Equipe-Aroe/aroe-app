@@ -16,7 +16,8 @@ import {
     MessageSquare,
     Info,
     LogOut,
-    ExternalLink
+    ExternalLink,
+    ArrowLeft
 } from 'lucide-react'
 import { useThemeContext } from '../../../contexts/ThemeContext'
 
@@ -75,10 +76,10 @@ const PREFERENCIAS_LISTA = [
 export default function DashboardConfiguracoes() {
     const { highContrast, darkMode, toggleDarkMode } = useThemeContext()
     const [themeSelection, setThemeSelection] = useState(darkMode ? 'escuro' : 'claro')
+    const [secaoAtiva, setSecaoAtiva] = useState(null)
 
-    // Estilizações responsivas baseadas no contexto de Alto Contraste
     const cardBgClass = highContrast
-        ? 'bg-white text-black border-2 border-black dark:bg-black dark:text-white dark:border-white'
+        ? 'bg-white text-black border-2 border-black dark:bg-black dark:text-white dark:border-white p-5 space-y-4 rounded-2xl'
         : 'bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/60 shadow-sm rounded-2xl p-5 space-y-4'
 
     const rowItemClass = highContrast
@@ -93,6 +94,10 @@ export default function DashboardConfiguracoes() {
         ? 'border-2 border-black dark:border-white'
         : 'border border-slate-300 dark:border-slate-700'
 
+    const inputClass = highContrast
+        ? 'border-2 border-black bg-white text-black dark:bg-black dark:text-white dark:border-white p-2 rounded-lg text-xs w-full'
+        : 'border border-slate-200 dark:border-slate-700 bg-transparent p-2 rounded-lg text-xs w-full focus:outline-none focus:border-emerald-500'
+
     const handleThemeChange = (type) => {
         setThemeSelection(type)
         if ((type === 'escuro' && !darkMode) || (type === 'claro' && darkMode)) {
@@ -100,53 +105,135 @@ export default function DashboardConfiguracoes() {
         }
     }
 
+    const renderConteudoSecao = () => {
+        switch (secaoAtiva) {
+            case 'dados':
+                return (
+                    <div className="space-y-4 animate-in fade-in duration-200">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="text-xs font-bold block mb-1">Nome Completo</label>
+                                <input type="text" defaultValue="Amanda Santos" className={inputClass} />
+                            </div>
+                            <div>
+                                <label className="text-xs font-bold block mb-1">E-mail</label>
+                                <input type="email" defaultValue="amanda.silva@email.com" className={inputClass} />
+                            </div>
+                        </div>
+                        <button className="bg-emerald-600 text-white text-xs font-bold px-4 py-2 rounded-xl hover:bg-emerald-700 transition-colors">
+                            Salvar Alterações
+                        </button>
+                    </div>
+                )
+            case 'seguranca':
+                return (
+                    <div className="space-y-4 animate-in fade-in duration-200">
+                        <div className="max-w-xs space-y-3">
+                            <div>
+                                <label className="text-xs font-bold block mb-1">Senha Atual</label>
+                                <input type="password" className={inputClass} />
+                            </div>
+                            <div>
+                                <label className="text-xs font-bold block mb-1">Nova Senha</label>
+                                <input type="password" className={inputClass} />
+                            </div>
+                        </div>
+                        <button className="bg-emerald-600 text-white text-xs font-bold px-4 py-2 rounded-xl hover:bg-emerald-700 transition-colors">
+                            Atualizar Senha
+                        </button>
+                    </div>
+                )
+            case 'notificacoes':
+                return (
+                    <div className="space-y-3 text-xs animate-in fade-in duration-200">
+                        <label className="flex items-center gap-3 cursor-pointer p-1">
+                            <input type="checkbox" defaultChecked className="rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4" />
+                            <span>Receber alertas sobre novos orçamentos de fórmulas</span>
+                        </label>
+                        <label className="flex items-center gap-3 cursor-pointer p-1">
+                            <input type="checkbox" defaultChecked className="rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4" />
+                            <span>Notificações de atualizações de frete e entrega</span>
+                        </label>
+                    </div>
+                )
+            default:
+                return (
+                    <div className="text-xs text-slate-400 p-4 border border-dashed rounded-xl text-center">
+                        Funcionalidade de {PREFERENCIAS_LISTA.find(p => p.id === secaoAtiva)?.titulo} em desenvolvimento.
+                    </div>
+                )
+        }
+    }
+
     return (
         <div className="space-y-6">
-            {/* Título interno visível apenas em telas menores (Mobile layout spacing) */}
             <div className="flex flex-col gap-1 md:hidden">
                 <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Configurações</h2>
                 <p className="text-sm text-slate-500 dark:text-slate-400">Personalize sua experiência no Aroê</p>
             </div>
 
-            {/* Layout em Grid Duplo (Coluna Principal + Barra Lateral Direita) */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
                 
-                {/* COLUNA ESQUERDA: Preferências da Conta */}
                 <div className="lg:col-span-2 space-y-5">
-                    <div className="space-y-1">
-                        <h3 className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">
-                            Preferências da conta
-                        </h3>
+                    <div className="flex items-center gap-3">
+                        {secaoAtiva !== null && (
+                            <button 
+                                onClick={() => setSecaoAtiva(null)}
+                                className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-500 transition-colors"
+                                title="Voltar para a lista"
+                            >
+                                <ArrowLeft size={16} />
+                            </button>
+                        )}
+                        <div>
+                            <h3 className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">
+                                {secaoAtiva === null 
+                                    ? 'Preferências da conta' 
+                                    : PREFERENCIAS_LISTA.find(p => p.id === secaoAtiva)?.titulo
+                                }
+                            </h3>
+                            {secaoAtiva !== null && (
+                                <p className="text-xs text-slate-400 dark:text-slate-500">
+                                    {PREFERENCIAS_LISTA.find(p => p.id === secaoAtiva)?.descricao}
+                                </p>
+                            )}
+                        </div>
                     </div>
 
-                    <div className="space-y-0.5">
-                        {PREFERENCIAS_LISTA.map((item) => {
-                            const IconComponent = item.icon
-                            return (
-                                <div
-                                    key={item.id}
-                                    className={`flex items-center justify-between cursor-pointer group ${rowItemClass}`}
-                                >
-                                    <div className="flex items-center gap-4 min-w-0">
-                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${highContrast ? 'border border-black dark:border-white text-current' : item.iconBg}`}>
-                                            <IconComponent size={18} />
+                    {secaoAtiva === null ? (
+                        <div className="space-y-0.5">
+                            {PREFERENCIAS_LISTA.map((item) => {
+                                const IconComponent = item.icon
+                                return (
+                                    <div
+                                        key={item.id}
+                                        onClick={() => setSecaoAtiva(item.id)}
+                                        className={`flex items-center justify-between cursor-pointer group ${rowItemClass}`}
+                                    >
+                                        <div className="flex items-center gap-4 min-w-0">
+                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${highContrast ? 'border border-black dark:border-white text-current' : item.iconBg}`}>
+                                                <IconComponent size={18} />
+                                            </div>
+                                            <div className="min-w-0">
+                                                <h4 className="text-sm font-bold text-slate-900 dark:text-white leading-tight">
+                                                    {item.titulo}
+                                                </h4>
+                                                <p className="text-xs text-slate-400 dark:text-slate-500 truncate mt-0.5">
+                                                    {item.descricao}
+                                                </p>
+                                            </div>
                                         </div>
-                                        <div className="min-w-0">
-                                            <h4 className="text-sm font-bold text-slate-900 dark:text-white leading-tight">
-                                                {item.titulo}
-                                            </h4>
-                                            <p className="text-xs text-slate-400 dark:text-slate-500 truncate mt-0.5">
-                                                {item.descricao}
-                                            </p>
-                                        </div>
+                                        <ChevronRight size={16} className="text-slate-400 dark:text-slate-600 group-hover:translate-x-0.5 transition-transform shrink-0 ml-2" />
                                     </div>
-                                    <ChevronRight size={16} className="text-slate-400 dark:text-slate-600 group-hover:translate-x-0.5 transition-transform shrink-0 ml-2" />
-                                </div>
-                            )
-                        })}
-                    </div>
+                                )
+                            })}
+                        </div>
+                    ) : (
+                        <div className={cardBgClass}>
+                            {renderConteudoSecao()}
+                        </div>
+                    )}
 
-                    {/* Banner Motivacional Inferior */}
                     <div className={`p-5 rounded-3xl flex items-center gap-4 ${bannerBgClass}`}>
                         <div className="w-12 h-12 rounded-full bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-slate-100 dark:border-slate-800 shrink-0 shadow-sm">
                             <Heart size={20} className="fill-current" />
@@ -162,10 +249,7 @@ export default function DashboardConfiguracoes() {
                     </div>
                 </div>
 
-                {/* COLUNA DIREITA: Widgets Laterais */}
                 <div className="space-y-5">
-                    
-                    {/* CARD 1: Resumo do Pedido / Perfil */}
                     <div className={cardBgClass}>
                         <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 tracking-wider uppercase">
                             Resumo do pedido
@@ -184,13 +268,15 @@ export default function DashboardConfiguracoes() {
                             </div>
                         </div>
                         <div className="pt-2">
-                            <button className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline">
+                            <button 
+                                onClick={() => setSecaoAtiva('dados')}
+                                className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline"
+                            >
                                 Ver meu perfil
                             </button>
                         </div>
                     </div>
 
-                    {/* CARD 2: Seleção Reativa de Tema */}
                     <div className={cardBgClass}>
                         <div>
                             <h3 className="text-sm font-bold text-slate-900 dark:text-white">Tema da aplicação</h3>
@@ -200,7 +286,6 @@ export default function DashboardConfiguracoes() {
                         </div>
 
                         <div className="space-y-2 pt-2">
-                            {/* Opção Claro */}
                             <button 
                                 onClick={() => handleThemeChange('claro')}
                                 className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/40 text-left text-xs transition-all"
@@ -213,7 +298,6 @@ export default function DashboardConfiguracoes() {
                                 </div>
                             </button>
 
-                            {/* Opção Escuro */}
                             <button 
                                 onClick={() => handleThemeChange('escuro')}
                                 className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/40 text-left text-xs transition-all"
@@ -226,7 +310,6 @@ export default function DashboardConfiguracoes() {
                                 </div>
                             </button>
 
-                            {/* Opção Automático */}
                             <button 
                                 onClick={() => setThemeSelection('automatico')}
                                 className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/40 text-left text-xs transition-all"
@@ -241,7 +324,6 @@ export default function DashboardConfiguracoes() {
                         </div>
                     </div>
 
-                    {/* CARD 3: Outras Opções / Links de Suporte */}
                     <div className={cardBgClass}>
                         <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 tracking-wider uppercase">
                             Outras opções

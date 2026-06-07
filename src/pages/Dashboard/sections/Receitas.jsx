@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { 
     Search, 
     Calendar, 
@@ -8,12 +8,14 @@ import {
     ChevronLeft, 
     ChevronRight, 
     ChevronDown,
-    FileText 
+    FileText,
+    Loader2,
+    X
 } from 'lucide-react'
 import { useThemeContext } from '../../../contexts/ThemeContext'
+import Tesseract from 'tesseract.js'
 
-// Dados fakes baseados exatamente na imagem image_399849.png
-const RECEITAS_MOCK = [
+const RECEITAS_MOCK_INITIAL = [
     {
         id: 1,
         nome: 'Enzimas digestivas',
@@ -22,7 +24,8 @@ const RECEITAS_MOCK = [
         pedidoId: '#122022',
         status: 'Em produção',
         statusCor: 'bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-400',
-        entregaInfo: 'Entregue em 15/04'
+        entregaInfo: 'Entregue em 15/04',
+        textoExtraido: 'Fórmula Sono Reparador\n- Melatonina ... 5 mg\n- Passiflora incarnata ... 300 mg\n- Magnésio Bisglicinato ... 250 mg'
     },
     {
         id: 2,
@@ -32,7 +35,8 @@ const RECEITAS_MOCK = [
         pedidoId: '#122022',
         status: 'Aguardando orçamento',
         statusCor: 'bg-orange-100 text-orange-700 dark:bg-orange-950/40 dark:text-orange-400',
-        entregaInfo: 'Entregue em 15/04'
+        entregaInfo: 'Entregue em 15/04',
+        textoExtraido: 'Magnésio Quelato ... 300 mg\nVitamina B6 ... 50 mg\nTomar 1 cápsula à noite.'
     },
     {
         id: 3,
@@ -42,7 +46,8 @@ const RECEITAS_MOCK = [
         pedidoId: '#122022',
         status: 'Entregue',
         statusCor: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400',
-        entregaInfo: 'Entregue em 15/04'
+        entregaInfo: 'Entregue em 15/04',
+        textoExtraido: 'Colágeno Tipo II ... 40 mg\nTomar 1 cápsula ao dia em jejum.'
     },
     {
         id: 4,
@@ -52,16 +57,57 @@ const RECEITAS_MOCK = [
         pedidoId: '#122022',
         status: 'Cancelado',
         statusCor: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
-        entregaInfo: 'Cancelado em 15/04'
+        entregaInfo: 'Cancelado em 15/04',
+        textoExtraido: 'Ômega 3 ... 1000 mg\nTomar 2 cápsulas ao dia.'
     }
 ]
 
 export default function DashboardReceitas() {
     const { highContrast } = useThemeContext()
-    const [activeTab, setActiveTab] = useState('minhas') // 'minhas' ou 'arquivadas'
+    const [activeTab, setActiveTab] = useState('minhas')
     const [search, setSearch] = useState('')
+    const [receitas, setReceitas] = useState(RECEITAS_MOCK_INITIAL)
+    const [isProcessing, setIsProcessing] = useState(false)
+    const fileInputRef = useRef(null)
+    const [receitaSelecionada, setReceitaSelecionada] = useState(null)
 
-    // Definição de estilos baseados no Alto Contraste (seguindo seu padrão da Sidebar)
+    const handleOcrUpload = async (event) => {
+        const file = event.target.files[0]
+        if (!file) return
+
+        setIsProcessing(true)
+
+        try {
+            const imageUrl = URL.createObjectURL(file)
+            const result = await Tesseract.recognize(imageUrl, 'por')
+            const text = result.data.text
+
+            const primeiraLinha = text.split('\n')[0] || 'Fórmula Identificada pela Aria'
+
+            const novaReceita = {
+                id: Date.now(),
+                nome: primeiraLinha.substring(0, 30) || 'Nova Fórmula Digitalizada',
+                tipo: 'Fórmula manipulada',
+                dataEnvio: new Date().toLocaleDateString('pt-BR'),
+                pedidoId: `#${Math.floor(100000 + Math.random() * 900000)}`,
+                status: 'Aguardando orçamento',
+                statusCor: 'bg-orange-100 text-orange-700 dark:bg-orange-950/40 dark:text-orange-400',
+                entregaInfo: 'Processado via IA',
+                textoExtraido: text
+            }
+
+            setReceitas(prev => [novaReceita, ...prev])
+            alert(`Receita lida com sucesso!\nComponente identificado: "${primeiraLinha}"`)
+
+        } catch (error) {
+            console.error(error)
+            alert("Erro ao ler imagem da receita.")
+        } finally {
+            setIsProcessing(false)
+            if (fileInputRef.current) fileInputRef.current.value = ''
+        }
+    }
+
     const cardBgClass = highContrast
         ? 'bg-white text-black border-2 border-black dark:bg-black dark:text-white dark:border-white'
         : 'bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/60 shadow-sm'
@@ -80,7 +126,14 @@ export default function DashboardReceitas() {
 
     return (
         <div className="space-y-6">
-            {/* Cabeçalho Interno da Página (Subtítulo dinâmico alinhado com a imagem) */}
+            <input 
+                type="file" 
+                ref={fileInputRef}
+                onChange={handleOcrUpload}
+                accept="image/*"
+                className="hidden"
+            />
+
             <div className="flex flex-col gap-1 md:hidden">
                 <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Receitas</h2>
                 <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -88,7 +141,6 @@ export default function DashboardReceitas() {
                 </p>
             </div>
 
-            {/* Abas (Tabs) - Minhas receitas / Receitas arquivadas */}
             <div className="flex items-center gap-6 border-b border-slate-100 dark:border-slate-800/60 pb-1">
                 <button
                     onClick={() => setActiveTab('minhas')}
@@ -118,10 +170,8 @@ export default function DashboardReceitas() {
                 </button>
             </div>
 
-            {/* Barra de Filtros e Ferramentas */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div className="flex flex-wrap items-center gap-3 flex-1 max-w-3xl">
-                    {/* Campo Buscar Local da Lista */}
                     <div className="relative flex-1 min-w-[200px]">
                         <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                         <input
@@ -133,41 +183,48 @@ export default function DashboardReceitas() {
                         />
                     </div>
 
-                    {/* Filtro Período */}
                     <button className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium transition-all ${buttonSecondaryClass}`}>
                         <Calendar size={14} className="text-slate-400" />
                         <span>Período: <strong className="font-semibold text-slate-800 dark:text-slate-200">Todos</strong></span>
                         <ChevronDown size={14} className="text-slate-400 ml-1" />
                     </button>
 
-                    {/* Filtro Tipo */}
                     <button className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium transition-all ${buttonSecondaryClass}`}>
                         <span>Tipo: <strong className="font-semibold text-slate-800 dark:text-slate-200">Todos</strong></span>
                         <ChevronDown size={14} className="text-slate-400 ml-1" />
                     </button>
 
-                    {/* Filtro Status */}
                     <button className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium transition-all ${buttonSecondaryClass}`}>
                         <span>Status: <strong className="font-semibold text-slate-800 dark:text-slate-200">Todos</strong></span>
                         <ChevronDown size={14} className="text-slate-400 ml-1" />
                     </button>
                 </div>
 
-                {/* Botão Enviar Receita */}
-                <button className={`flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all shrink-0 ${buttonActionClass}`}>
-                    <Upload size={16} />
-                    Enviar receita
+                <button 
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isProcessing}
+                    className={`flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all shrink-0 ${buttonActionClass}`}
+                >
+                    {isProcessing ? (
+                        <>
+                            <Loader2 size={16} className="animate-spin" />
+                            Aria Processando...
+                        </>
+                    ) : (
+                        <>
+                            <Upload size={16} />
+                            Enviar receita
+                        </>
+                    )}
                 </button>
             </div>
 
-            {/* Lista de Receitas em Cards */}
             <div className="space-y-3">
-                {RECEITAS_MOCK.map((receita) => (
+                {receitas.map((receita) => (
                     <div 
                         key={receita.id} 
                         className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl gap-4 transition-all ${cardBgClass}`}
                     >
-                        {/* Lado Esquerdo: Ícone + Infos Principais */}
                         <div className="flex items-start gap-4">
                             <div className="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
                                 <FileText size={22} />
@@ -190,7 +247,6 @@ export default function DashboardReceitas() {
                             </div>
                         </div>
 
-                        {/* Lado Direito: Status + Ações */}
                         <div className="flex items-center justify-between sm:justify-end gap-6 border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-50 dark:border-slate-800/40">
                             <div className="text-left sm:text-right space-y-1">
                                 <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${receita.statusCor}`}>
@@ -202,7 +258,10 @@ export default function DashboardReceitas() {
                             </div>
 
                             <div className="flex items-center gap-2">
-                                <button className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all ${buttonSecondaryClass}`}>
+                                <button 
+                                    onClick={() => setReceitaSelecionada(receita)}
+                                    className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all ${buttonSecondaryClass}`}
+                                >
                                     Ver detalhes
                                 </button>
                                 <button className="p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
@@ -214,9 +273,7 @@ export default function DashboardReceitas() {
                 ))}
             </div>
 
-            {/* Paginação Inferior */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-100 dark:border-slate-800/60">
-                {/* Controles de navegação numérica */}
                 <div className="flex items-center gap-1.5">
                     <button className={`p-2 rounded-lg transition-all ${buttonSecondaryClass}`}>
                         <ChevronLeft size={14} />
@@ -235,12 +292,63 @@ export default function DashboardReceitas() {
                     </button>
                 </div>
 
-                {/* Seletor de itens por página */}
                 <button className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${buttonSecondaryClass}`}>
                     <span>4 por página</span>
                     <ChevronDown size={14} className="text-slate-400" />
                 </button>
             </div>
+
+            {receitaSelecionada && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+                    <div className={`w-full max-w-lg rounded-2xl p-6 relative overflow-hidden shadow-xl border ${
+                        highContrast 
+                        ? 'bg-white border-4 border-black text-black dark:bg-black dark:border-white dark:text-white' 
+                        : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'
+                    }`}>
+                        <div className="flex items-start justify-between mb-4 pb-3 border-b border-slate-100 dark:border-slate-800">
+                            <div>
+                                <span className={`inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold mb-1.5 ${receitaSelecionada.statusCor}`}>
+                                    {receitaSelecionada.status}
+                                </span>
+                                <h3 className="text-lg font-bold text-slate-900 dark:text-white">{receitaSelecionada.nome}</h3>
+                                <p className="text-xs text-slate-400 dark:text-slate-500">Pedido {receitaSelecionada.pedidoId} • {receitaSelecionada.tipo}</p>
+                            </div>
+                            <button 
+                                onClick={() => setReceitaSelecionada(null)}
+                                className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+                            >
+                                <X size={18} />
+                            </button>
+                        </div>
+
+                        <div className="space-y-3">
+                            <label className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                                Conteúdo da Receita (Leitura Digital)
+                            </label>
+                            <div className={`p-4 rounded-xl text-sm font-mono whitespace-pre-wrap max-h-60 overflow-y-auto ${
+                                highContrast ? 'border-2 border-black bg-slate-50' : 'bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300'
+                            }`}>
+                                {receitaSelecionada.textoExtraido || "Nenhum texto adicional pôde ser processado nesta visualização rápida."}
+                            </div>
+                        </div>
+
+                        <div className="mt-6 flex justify-end gap-2">
+                            <button 
+                                onClick={() => setReceitaSelecionada(null)}
+                                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${buttonSecondaryClass}`}
+                            >
+                                Fechar
+                            </button>
+                            <button 
+                                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${buttonActionClass}`}
+                                onClick={() => alert('Direcionando para cotação...')}
+                            >
+                                Solicitar Orçamento
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
