@@ -10,7 +10,7 @@ import {
     ChevronDown,
     FileText,
     Loader2,
-    X // Adicionado ícone de fechar para o modal
+    X
 } from 'lucide-react'
 import { useThemeContext } from '../../../contexts/ThemeContext'
 import Tesseract from 'tesseract.js'
@@ -38,18 +38,37 @@ const RECEITAS_MOCK_INITIAL = [
         entregaInfo: 'Entregue em 15/04',
         textoExtraido: 'Magnésio Quelato ... 300 mg\nVitamina B6 ... 50 mg\nTomar 1 cápsula à noite.'
     },
+    {
+        id: 3,
+        nome: 'Colágeno Tipo II',
+        tipo: 'Dose Única',
+        dataEnvio: '15/04/2025',
+        pedidoId: '#122022',
+        status: 'Entregue',
+        statusCor: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400',
+        entregaInfo: 'Entregue em 15/04',
+        textoExtraido: 'Colágeno Tipo II ... 40 mg\nTomar 1 cápsula ao dia em jejum.'
+    },
+    {
+        id: 4,
+        nome: 'Ômega 3',
+        tipo: 'Fórmula manipulada',
+        dataEnvio: '15/04/2025',
+        pedidoId: '#122022',
+        status: 'Cancelado',
+        statusCor: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
+        entregaInfo: 'Cancelado em 15/04',
+        textoExtraido: 'Ômega 3 ... 1000 mg\nTomar 2 cápsulas ao dia.'
+    }
 ]
 
 export default function DashboardReceitas() {
     const { highContrast } = useThemeContext()
     const [activeTab, setActiveTab] = useState('minhas')
     const [search, setSearch] = useState('')
-    
     const [receitas, setReceitas] = useState(RECEITAS_MOCK_INITIAL)
     const [isProcessing, setIsProcessing] = useState(false)
     const fileInputRef = useRef(null)
-
-    // NOVO ESTADO: Armazena a receita que está sendo visualizada no detalhe
     const [receitaSelecionada, setReceitaSelecionada] = useState(null)
 
     const handleOcrUpload = async (event) => {
@@ -74,7 +93,7 @@ export default function DashboardReceitas() {
                 status: 'Aguardando orçamento',
                 statusCor: 'bg-orange-100 text-orange-700 dark:bg-orange-950/40 dark:text-orange-400',
                 entregaInfo: 'Processado via IA',
-                textoExtraido: text // Salva o texto completo do OCR para ver nos detalhes
+                textoExtraido: text
             }
 
             setReceitas(prev => [novaReceita, ...prev])
@@ -122,25 +141,63 @@ export default function DashboardReceitas() {
                 </p>
             </div>
 
-            {/* Tabs */}
             <div className="flex items-center gap-6 border-b border-slate-100 dark:border-slate-800/60 pb-1">
-                <button onClick={() => setActiveTab('minhas')} className={`pb-3 text-sm font-bold transition-all relative ${activeTab === 'minhas' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'}`}>
+                <button
+                    onClick={() => setActiveTab('minhas')}
+                    className={`pb-3 text-sm font-bold transition-all relative ${
+                        activeTab === 'minhas'
+                            ? 'text-emerald-600 dark:text-emerald-400'
+                            : 'text-slate-400 dark:text-slate-500 hover:text-slate-600'
+                    }`}
+                >
                     Minhas receitas
-                    {activeTab === 'minhas' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-500 dark:bg-emerald-400 rounded-full" />}
+                    {activeTab === 'minhas' && (
+                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-500 dark:bg-emerald-400 rounded-full" />
+                    )}
                 </button>
-                <button onClick={() => setActiveTab('arquivadas')} className={`pb-3 text-sm font-bold transition-all relative ${activeTab === 'arquivadas' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'}`}>
+                <button
+                    onClick={() => setActiveTab('arquivadas')}
+                    className={`pb-3 text-sm font-bold transition-all relative ${
+                        activeTab === 'arquivadas'
+                            ? 'text-emerald-600 dark:text-emerald-400'
+                            : 'text-slate-400 dark:text-slate-500 hover:text-slate-600'
+                    }`}
+                >
                     Receitas arquivadas
-                    {activeTab === 'arquivadas' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-500 dark:bg-emerald-400 rounded-full" />}
+                    {activeTab === 'arquivadas' && (
+                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-500 dark:bg-emerald-400 rounded-full" />
+                    )}
                 </button>
             </div>
 
-            {/* Barra de Filtros e Botão Enviar Receita */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div className="flex flex-wrap items-center gap-3 flex-1 max-w-3xl">
                     <div className="relative flex-1 min-w-[200px]">
                         <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                        <input type="text" placeholder="Buscar" value={search} onChange={(e) => setSearch(e.target.value)} className={`w-full pl-10 pr-4 py-2 rounded-xl text-sm focus:outline-none transition-all ${inputClass}`} />
+                        <input
+                            type="text"
+                            placeholder="Buscar"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className={`w-full pl-10 pr-4 py-2 rounded-xl text-sm focus:outline-none transition-all ${inputClass}`}
+                        />
                     </div>
+
+                    <button className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium transition-all ${buttonSecondaryClass}`}>
+                        <Calendar size={14} className="text-slate-400" />
+                        <span>Período: <strong className="font-semibold text-slate-800 dark:text-slate-200">Todos</strong></span>
+                        <ChevronDown size={14} className="text-slate-400 ml-1" />
+                    </button>
+
+                    <button className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium transition-all ${buttonSecondaryClass}`}>
+                        <span>Tipo: <strong className="font-semibold text-slate-800 dark:text-slate-200">Todos</strong></span>
+                        <ChevronDown size={14} className="text-slate-400 ml-1" />
+                    </button>
+
+                    <button className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium transition-all ${buttonSecondaryClass}`}>
+                        <span>Status: <strong className="font-semibold text-slate-800 dark:text-slate-200">Todos</strong></span>
+                        <ChevronDown size={14} className="text-slate-400 ml-1" />
+                    </button>
                 </div>
 
                 <button 
@@ -162,53 +219,74 @@ export default function DashboardReceitas() {
                 </button>
             </div>
 
-            {/* Lista de Receitas */}
             <div className="space-y-3">
                 {receitas.map((receita) => (
-                    <div key={receita.id} className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl gap-4 transition-all ${cardBgClass}`}>
+                    <div 
+                        key={receita.id} 
+                        className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl gap-4 transition-all ${cardBgClass}`}
+                    >
                         <div className="flex items-start gap-4">
                             <div className="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
                                 <FileText size={22} />
                             </div>
                             <div className="space-y-1">
-                                <h4 className="text-base font-bold text-slate-900 dark:text-white leading-tight">{receita.nome}</h4>
-                                <p className="text-xs text-slate-400 dark:text-slate-500">{receita.tipo}</p>
+                                <h4 className="text-base font-bold text-slate-900 dark:text-white leading-tight">
+                                    {receita.nome}
+                                </h4>
+                                <p className="text-xs text-slate-400 dark:text-slate-500">
+                                    {receita.tipo}
+                                </p>
                                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-1 text-xs text-slate-400 dark:text-slate-500">
-                                    <span className="flex items-center gap-1"><Calendar size={12} /> Enviada em {receita.dataEnvio}</span>
-                                    <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium"><Tag size={12} /> Pedido {receita.pedidoId}</span>
+                                    <span className="flex items-center gap-1">
+                                        <Calendar size={12} /> Enviada em {receita.dataEnvio}
+                                    </span>
+                                    <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
+                                        <Tag size={12} /> Pedido {receita.pedidoId}
+                                    </span>
                                 </div>
                             </div>
                         </div>
 
                         <div className="flex items-center justify-between sm:justify-end gap-6 border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-50 dark:border-slate-800/40">
                             <div className="text-left sm:text-right space-y-1">
-                                <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${receita.statusCor}`}>{receita.status}</span>
-                                <p className="text-[11px] text-slate-400 dark:text-slate-500">{receita.entregaInfo}</p>
+                                <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${receita.statusCor}`}>
+                                    {receita.status}
+                                </span>
+                                <p className="text-[11px] text-slate-400 dark:text-slate-500">
+                                    {receita.entregaInfo}
+                                </p>
                             </div>
+
                             <div className="flex items-center gap-2">
-                                {/* MODIFICADO: onClick adicionado para abrir os detalhes */}
                                 <button 
                                     onClick={() => setReceitaSelecionada(receita)}
                                     className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all ${buttonSecondaryClass}`}
                                 >
                                     Ver detalhes
                                 </button>
-                                <button className="p-2 text-slate-400"><MoreVertical size={16} /></button>
+                                <button className="p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+                                    <MoreVertical size={16} />
+                                </button>
                             </div>
                         </div>
                     </div>
                 ))}
             </div>
 
-            {/* Paginação Inferior */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-100 dark:border-slate-800/60">
                 <div className="flex items-center gap-1.5">
                     <button className={`p-2 rounded-lg transition-all ${buttonSecondaryClass}`}>
                         <ChevronLeft size={14} />
                     </button>
-                    <button className="w-8 h-8 rounded-lg text-xs font-bold bg-emerald-600 text-white shadow-sm">1</button>
-                    <button className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${buttonSecondaryClass}`}>2</button>
-                    <button className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${buttonSecondaryClass}`}>3</button>
+                    <button className="w-8 h-8 rounded-lg text-xs font-bold bg-emerald-600 text-white shadow-sm">
+                        1
+                    </button>
+                    <button className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${buttonSecondaryClass}`}>
+                        2
+                    </button>
+                    <button className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${buttonSecondaryClass}`}>
+                        3
+                    </button>
                     <button className={`p-2 rounded-lg transition-all ${buttonSecondaryClass}`}>
                         <ChevronRight size={14} />
                     </button>
@@ -220,7 +298,6 @@ export default function DashboardReceitas() {
                 </button>
             </div>
 
-            {/* NOVO: COMPONENTE DE MODAL DE DETALHES */}
             {receitaSelecionada && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
                     <div className={`w-full max-w-lg rounded-2xl p-6 relative overflow-hidden shadow-xl border ${
@@ -228,7 +305,6 @@ export default function DashboardReceitas() {
                         ? 'bg-white border-4 border-black text-black dark:bg-black dark:border-white dark:text-white' 
                         : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'
                     }`}>
-                        {/* Header do Modal */}
                         <div className="flex items-start justify-between mb-4 pb-3 border-b border-slate-100 dark:border-slate-800">
                             <div>
                                 <span className={`inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold mb-1.5 ${receitaSelecionada.statusCor}`}>
@@ -245,7 +321,6 @@ export default function DashboardReceitas() {
                             </button>
                         </div>
 
-                        {/* Conteúdo Extrapolado do OCR */}
                         <div className="space-y-3">
                             <label className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                                 Conteúdo da Receita (Leitura Digital)
@@ -257,7 +332,6 @@ export default function DashboardReceitas() {
                             </div>
                         </div>
 
-                        {/* Rodapé do Modal */}
                         <div className="mt-6 flex justify-end gap-2">
                             <button 
                                 onClick={() => setReceitaSelecionada(null)}

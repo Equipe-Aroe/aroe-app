@@ -76,11 +76,8 @@ const PREFERENCIAS_LISTA = [
 export default function DashboardConfiguracoes() {
     const { highContrast, darkMode, toggleDarkMode } = useThemeContext()
     const [themeSelection, setThemeSelection] = useState(darkMode ? 'escuro' : 'claro')
-    
-    // ESTADO PARA CONTROLAR A SEÇÃO ATIVA (null significa que mostra a lista principal)
     const [secaoAtiva, setSecaoAtiva] = useState(null)
 
-    // Estilizações responsivas baseadas no contexto de Alto Contraste
     const cardBgClass = highContrast
         ? 'bg-white text-black border-2 border-black dark:bg-black dark:text-white dark:border-white p-5 space-y-4 rounded-2xl'
         : 'bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/60 shadow-sm rounded-2xl p-5 space-y-4'
@@ -108,7 +105,6 @@ export default function DashboardConfiguracoes() {
         }
     }
 
-    // FUNÇÃO QUE RETORNA O FORMULÁRIO/CONTEÚDO DE ACORDO COM A SEÇÃO SELECIONADA
     const renderConteudoSecao = () => {
         switch (secaoAtiva) {
             case 'dados':
@@ -171,19 +167,14 @@ export default function DashboardConfiguracoes() {
 
     return (
         <div className="space-y-6">
-            {/* Título interno visível apenas em telas menores */}
             <div className="flex flex-col gap-1 md:hidden">
                 <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Configurações</h2>
                 <p className="text-sm text-slate-500 dark:text-slate-400">Personalize sua experiência no Aroê</p>
             </div>
 
-            {/* Layout em Grid Duplo */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
                 
-                {/* COLUNA ESQUERDA: Preferências da Conta */}
                 <div className="lg:col-span-2 space-y-5">
-                    
-                    {/* Cabeçalho Dinâmico da Coluna Esquerda */}
                     <div className="flex items-center gap-3">
                         {secaoAtiva !== null && (
                             <button 
@@ -209,7 +200,6 @@ export default function DashboardConfiguracoes() {
                         </div>
                     </div>
 
-                    {/* CONTEÚDO ALTERNÁVEL: Se nenhuma seção estiver ativa, exibe a LISTA */}
                     {secaoAtiva === null ? (
                         <div className="space-y-0.5">
                             {PREFERENCIAS_LISTA.map((item) => {
@@ -217,7 +207,7 @@ export default function DashboardConfiguracoes() {
                                 return (
                                     <div
                                         key={item.id}
-                                        onClick={() => setSecaoAtiva(item.id)} // CLIQUE ATIVA A SEÇÃO
+                                        onClick={() => setSecaoAtiva(item.id)}
                                         className={`flex items-center justify-between cursor-pointer group ${rowItemClass}`}
                                     >
                                         <div className="flex items-center gap-4 min-w-0">
@@ -239,13 +229,11 @@ export default function DashboardConfiguracoes() {
                             })}
                         </div>
                     ) : (
-                        /* Se uma seção estiver ativa, renderiza o CARD com o formulário interno */
                         <div className={cardBgClass}>
                             {renderConteudoSecao()}
                         </div>
                     )}
 
-                    {/* Banner Motivacional Inferior */}
                     <div className={`p-5 rounded-3xl flex items-center gap-4 ${bannerBgClass}`}>
                         <div className="w-12 h-12 rounded-full bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-slate-100 dark:border-slate-800 shrink-0 shadow-sm">
                             <Heart size={20} className="fill-current" />
@@ -261,10 +249,7 @@ export default function DashboardConfiguracoes() {
                     </div>
                 </div>
 
-                {/* COLUNA DIREITA: Widgets Laterais (Mantidos sempre visíveis para dar contexto de dashboard) */}
                 <div className="space-y-5">
-                    
-                    {/* CARD 1: Perfil */}
                     <div className={cardBgClass}>
                         <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 tracking-wider uppercase">
                             Resumo do pedido
@@ -284,7 +269,7 @@ export default function DashboardConfiguracoes() {
                         </div>
                         <div className="pt-2">
                             <button 
-                                onClick={() => setSecaoAtiva('dados')} // Atalho direto para Dados Pessoais
+                                onClick={() => setSecaoAtiva('dados')}
                                 className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline"
                             >
                                 Ver meu perfil
@@ -292,7 +277,6 @@ export default function DashboardConfiguracoes() {
                         </div>
                     </div>
 
-                    {/* CARD 2: Seleção Reativa de Tema */}
                     <div className={cardBgClass}>
                         <div>
                             <h3 className="text-sm font-bold text-slate-900 dark:text-white">Tema da aplicação</h3>
@@ -340,7 +324,6 @@ export default function DashboardConfiguracoes() {
                         </div>
                     </div>
 
-                    {/* CARD 3: Outras Opções */}
                     <div className={cardBgClass}>
                         <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 tracking-wider uppercase">
                             Outras opções
