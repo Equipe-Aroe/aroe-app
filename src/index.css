@@ -17,122 +17,6 @@ html {
   color-scheme: light dark;
 }
 
-/* ============================================
-   ALTO CONTRASTE - Sobrescreve Tailwind
-   ============================================ */
-html[data-contrast="high"],
-html.high-contrast {
-  background-color: #000000 !important;
-  color: #FFFF00 !important;
-}
-
-html[data-contrast="high"] body,
-html.high-contrast body {
-  background-color: #000000 !important;
-  color: #FFFF00 !important;
-}
-
-/* Textos */
-html[data-contrast="high"] h1,
-html[data-contrast="high"] h2,
-html[data-contrast="high"] h3,
-html[data-contrast="high"] h4,
-html[data-contrast="high"] h5,
-html[data-contrast="high"] h6,
-html[data-contrast="high"] p,
-html[data-contrast="high"] span,
-html[data-contrast="high"] li,
-html[data-contrast="high"] a,
-html[data-contrast="high"] button,
-html.high-contrast h1,
-html.high-contrast h2,
-html.high-contrast h3,
-html.high-contrast h4,
-html.high-contrast h5,
-html.high-contrast h6,
-html.high-contrast p,
-html.high-contrast span,
-html.high-contrast li,
-html.high-contrast a,
-html.high-contrast button {
-  color: #FFFF00 !important;
-}
-
-/* Seções e containers - mantém fundos originais mas adiciona overlay */
-html[data-contrast="high"] section,
-html[data-contrast="high"] main,
-html[data-contrast="high"] article,
-html.high-contrast section,
-html.high-contrast main,
-html.high-contrast article {
-  position: relative;
-}
-
-html[data-contrast="high"] section::before,
-html.high-contrast section::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0.85);
-  pointer-events: none;
-  z-index: 0;
-}
-
-html[data-contrast="high"] section > *,
-html.high-contrast section > * {
-  position: relative;
-  z-index: 1;
-}
-
-/* Buttons */
-html[data-contrast="high"] button,
-html[data-contrast="high"] a[role="button"],
-html.high-contrast button,
-html.high-contrast a[role="button"] {
-  background-color: #000000 !important;
-  color: #FFFF00 !important;
-  border: 2px solid #FFFF00 !important;
-  scroll-behavior: auto;
-}
-
-html[data-contrast="high"] button:hover,
-html[data-contrast="high"] a[role="button"]:hover,
-html.high-contrast button:hover,
-html.high-contrast a[role="button"]:hover {
-  background-color: #FFFF00 !important;
-  color: #000000 !important;
-}
-
-/* Inputs */
-html[data-contrast="high"] input,
-html[data-contrast="high"] textarea,
-html[data-contrast="high"] select,
-html.high-contrast input,
-html.high-contrast textarea,
-html.high-contrast select {
-  background-color: #FFFF00 !important;
-  color: #000000 !important;
-  border: 2px solid #000000 !important;
-}
-
-/* Imagens */
-html[data-contrast="high"] img,
-html.high-contrast img {
-  filter: contrast(1.2) brightness(1.1);
-}
-
-/* Selection */
-::selection {
-  background: #4DAA5C;
-  color: white;
-}
-
-html[data-contrast="high"] ::selection,
-html.high-contrast ::selection {
-  background: #FFFF00 !important;
-  color: #000000 !important;
-}
-
 body {
   background-color: white;
   color: #0f172a;
@@ -142,4 +26,166 @@ body {
 .dark body {
   background-color: #020617;
   color: white;
+}
+
+/* Selection */
+::selection {
+  background: #4DAA5C;
+  color: white;
+}
+
+/* ==========================================================================
+   ALTO CONTRASTE MODERNO (WCAG Compliant)
+   Sobrescreve backgrounds complexos e preserva a interatividade do Aroê
+   ========================================================================== */
+html[data-contrast="high"],
+html.high-contrast {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+html[data-contrast="high"] body,
+html.high-contrast body {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+/* Forçar cores de fundo em blocos estruturais sem quebrar z-index */
+html[data-contrast="high"] div,
+html[data-contrast="high"] header,
+html[data-contrast="high"] section,
+html[data-contrast="high"] main,
+html[data-contrast="high"] article,
+html[data-contrast="high"] aside,
+html[data-contrast="high"] nav,
+html.high-contrast div,
+html.high-contrast header,
+html.high-contrast section,
+html.high-contrast main,
+html.high-contrast article,
+html.high-contrast aside,
+html.high-contrast nav {
+  background-color: #000000 !important;
+  background-image: none !important;
+  border-color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+/* Elementos de texto - Usando Branco para leitura e Amarelo para destaques */
+html[data-contrast="high"] p,
+html[data-contrast="high"] span,
+html[data-contrast="high"] li,
+html[data-contrast="high"] label,
+html.high-contrast p,
+html.high-contrast span,
+html.high-contrast li,
+html.high-contrast label {
+  color: #ffffff !important;
+}
+
+/* Títulos em Amarelo para forte hierarquia visual */
+html[data-contrast="high"] h1,
+html[data-contrast="high"] h2,
+html[data-contrast="high"] h3,
+html[data-contrast="high"] h4,
+html[data-contrast="high"] h5,
+html[data-contrast="high"] h6,
+html[data-contrast="high"] strong,
+html.high-contrast h1,
+html.high-contrast h2,
+html.high-contrast h3,
+html.high-contrast h4,
+html.high-contrast h5,
+html.high-contrast h6,
+html.high-contrast strong {
+  color: #ffff00 !important;
+}
+
+/* Links estruturais */
+html[data-contrast="high"] a,
+html.high-contrast a {
+  color: #00ffff !important; /* Ciano para links garante legibilidade máxima no preto */
+  text-decoration: underline !important;
+}
+
+/* Botões Estilizados */
+html[data-contrast="high"] button,
+html[data-contrast="high"] a[role="button"],
+html.high-contrast button,
+html.high-contrast a[role="button"] {
+  background-color: #000000 !important;
+  color: #ffff00 !important;
+  border: 2px solid #ffff00 !important;
+  border-radius: 4px !important; /* Bordas mais nítidas auxiliam cognição */
+  background-image: none !important;
+}
+
+html[data-contrast="high"] button:hover,
+html[data-contrast="high"] a[role="button"]:hover,
+html.high-contrast button:hover,
+html.high-contrast a[role="button"]:hover {
+  background-color: #ffff00 !important;
+  color: #000000 !important;
+}
+
+/* Inputs e Seletores corrigidos (Fundo Preto, Texto Branco, Borda Amarela) */
+html[data-contrast="high"] input,
+html[data-contrast="high"] textarea,
+html[data-contrast="high"] select,
+html.high-contrast input,
+html.high-contrast textarea,
+html.high-contrast select {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border: 2px solid #ffff00 !important;
+  border-radius: 4px !important;
+}
+
+html[data-contrast="high"] input::placeholder,
+html.high-contrast input::placeholder {
+  color: #aaaaaa !important;
+}
+
+/* Forçar os ícones do Lucide (SVGs) a obedecerem ao alto contraste */
+html[data-contrast="high"] svg,
+html.high-contrast svg {
+  stroke: currentColor !important;
+  fill: transparent !important;
+}
+
+/* Imagens e mídias acessíveis */
+html[data-contrast="high"] img,
+html.high-contrast img {
+  filter: grayscale(1) contrast(1.5) !important;
+}
+
+/* Customização da seleção no alto contraste */
+html[data-contrast="high"] ::selection,
+html.high-contrast ::selection {
+  background: #ffff00 !important;
+  color: #000000 !important;
+}
+
+/* ============================================
+   FILTROS DE DALTONISMO GLOBAIS
+   ============================================ */
+
+/* Protanopia (Insensibilidade ao Vermelho) */
+html.filter-protanopia {
+  filter: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"><filter id="f"><feColorMatrix type="matrix" values="0.567,0.433,0,0,0 0.558,0.442,0,0,0 0,0.242,0.758,0,0 0,0,0,1,0"/></filter></svg>#f') !important;
+}
+
+/* Deuteranopia (Insensibilidade ao Verde - Mais comum) */
+html.filter-deuteranopia {
+  filter: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"><filter id="f"><feColorMatrix type="matrix" values="0.625,0.375,0,0,0 0.7,0.3,0,0,0 0,0.3,0.7,0,0 0,0,0,1,0"/></filter></svg>#f') !important;
+}
+
+/* Tritanopia (Insensibilidade ao Azul/Amarelo) */
+html.filter-tritanopia {
+  filter: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"><filter id="f"><feColorMatrix type="matrix" values="0.95,0.05,0,0,0 0,0.433,0.567,0,0 0,0.475,0.525,0,0 0,0,0,1,0"/></filter></svg>#f') !important;
+}
+
+/* Garante que componentes de overlay como modais e a própria barra de acessibilidade não fiquem bugados com o filtro aplicado */
+html[data-color-filter]:not([data-color-filter="normal"]) body {
+  transition: filter 0.3s ease;
 }

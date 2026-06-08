@@ -20,6 +20,7 @@ import DashboardHistorico from './pages/Dashboard/sections/Historico'
 import DashboardConfiguracoes from './pages/Dashboard/sections/Configuracoes'
 import DashboardAjuda from './pages/Dashboard/sections/Ajuda'
 import AriaIA from './pages/Dashboard/sections/AriaIA';
+import DashboardPerfil from './pages/Dashboard/sections/Perfil';
 
 function App() {
   const location = useLocation()
@@ -58,6 +59,7 @@ function App() {
           <Route path="lembretes" element={<DashboardLembretes />} />
           <Route path="notificacoes" element={<DashboardNotificacoes />} />
           <Route path="historico" element={<DashboardHistorico />} />
+          <Route path="perfil" element={<DashboardPerfil />} />
           <Route path="configuracoes" element={<DashboardConfiguracoes />} />
           <Route path="ajuda" element={<DashboardAjuda />} />
         </Route>

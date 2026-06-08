@@ -14,11 +14,10 @@ import {
 } from 'lucide-react'
 import { useThemeContext } from '../../../contexts/ThemeContext'
 
-// Alinhado exatamente com a sua DashboardHome
-const DEMO_STORAGE_KEY = '@Aroe:demo_session'
+const LOCAL_STORAGE_KEY = '@Aroe:demo_session'
 
-// Base de dados clínicos simulados para enriquecer a apresentação
-const DEMO_DATABASE = {
+// Base de dados robusta para a Demo
+const DADOS_PERFIL = {
     irene: {
         nome: 'Irene Souza Silva',
         email: 'dona.irene@exemplo.com',
@@ -49,40 +48,48 @@ const DEMO_DATABASE = {
 }
 
 const getLoggedProfile = () => {
-    const demoDataRaw = localStorage.getItem(DEMO_STORAGE_KEY)
-    
-    if (!demoDataRaw) {
-        return DEMO_DATABASE.amanda
+    // 1. Tenta buscar pelas chaves mais comuns de sistemas de login
+    const savedData = localStorage.getItem('aroe_user_profile') || 
+                      localStorage.getItem('user_profile') || 
+                      localStorage.getItem('user') ||
+                      localStorage.getItem('loggedUser');
+
+    if (!savedData) {
+        console.warn("Aroê Demo: Nenhum usuário encontrado no localStorage. Carregando padrão (Amanda).");
+        return DADOS_PERFIL.amanda;
     }
 
     try {
-        const session = JSON.parse(demoDataRaw)
-        // Acessa exatamente a mesma estrutura usada na Home: session.user.nome
-        const nomeUsuario = session.user?.nome || ''
-        const emailUsuario = session.user?.email || ''
-
-        // Faz o mapeamento e mescla com a base clínica simulada correspondente
-        if (nomeUsuario.includes('Irene')) {
-            return { ...DEMO_DATABASE.irene, ...session.user, nome: nomeUsuario }
-        } 
+        const parsed = JSON.parse(savedData);
+        console.log("Aroê Demo: Dados brutos detectados no login:", parsed);
         
-        if (nomeUsuario.includes('Ricardo')) {
-            return { ...DEMO_DATABASE.ricardo, ...session.user, nome: nomeUsuario }
-        }
+        // Padroniza possíveis variações de propriedades (nome vs name, email vs Email)
+        const nome = (parsed.nome || parsed.name || parsed.fullName || '').toLowerCase();
+        const email = (parsed.email || parsed.Email || parsed.userEmail || '').toLowerCase();
 
-        // Caso padrão / Amanda
-        return { ...DEMO_DATABASE.amanda, ...session.user, nome: nomeUsuario || DEMO_DATABASE.amanda.nome }
+        // 2. Procura por correspondência da Dona Irene (via nome ou e-mail)
+        if (nome.includes('irene') || email.includes('irene')) {
+            return { ...DADOS_PERFIL.irene, ...parsed, nome: parsed.nome || parsed.name || DADOS_PERFIL.irene.nome };
+        }
+        
+        // 3. Procura por correspondência do Ricardo (via nome ou e-mail)
+        if (nome.includes('ricardo') || email.includes('ricardo')) {
+            return { ...DADOS_PERFIL.ricardo, ...parsed, nome: parsed.nome || parsed.name || DADOS_PERFIL.ricardo.nome };
+        }
+        
+        // 4. Se houver um usuário logado mas não for nenhum dos dois acima, mantém os dados dele mas aplica a base estruturada
+        return { ...DADOS_PERFIL.amanda, ...parsed, nome: parsed.nome || parsed.name || DADOS_PERFIL.amanda.nome };
 
     } catch (e) {
-        console.error("Erro ao ler sessão no Perfil:", e)
-        return DEMO_DATABASE.amanda
+        console.error("Aroê Demo: Erro ao fazer o parse dos dados do usuário", e);
+        return DADOS_PERFIL.amanda;
     }
 }
 
 export default function DashboardPerfil() {
     const { highContrast } = useThemeContext()
     
-    // Inicia o estado capturando o usuário correto da demo
+    // Inicia o estado com quem estiver logado de verdade no ecossistema
     const [profile, setProfile] = useState(() => getLoggedProfile())
 
     const [isSaving, setIsSaving] = useState(false)
@@ -91,7 +98,7 @@ export default function DashboardPerfil() {
     const [isChangingPassword, setIsChangingPassword] = useState(false)
     const [showPasswordSuccess, setShowPasswordSuccess] = useState(false)
 
-    // Atualiza instantaneamente se o usuário alternar de perfil em tempo de execução
+    // Escuta alterações externas (ex: se o usuário deslogar ou trocar de conta na navbar)
     useEffect(() => {
         const handleExternalUpdate = () => {
             setProfile(getLoggedProfile())
@@ -122,24 +129,11 @@ export default function DashboardPerfil() {
         setIsSaving(true)
 
         setTimeout(() => {
-            // Atualiza o localStorage mantendo a estrutura original da sua Demo Session
-            const currentSessionRaw = localStorage.getItem(DEMO_STORAGE_KEY)
-            let updatedSession = {}
-            
-            if (currentSessionRaw) {
-                updatedSession = JSON.parse(currentSessionRaw)
-            }
-            
-            updatedSession.user = {
-                ...updatedSession.user,
-                ...profile
-            }
-
-            localStorage.setItem(DEMO_STORAGE_KEY, JSON.stringify(updatedSession))
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(profile))
             setIsSaving(false)
             setShowSuccess(true)
             
-            // Dispara o evento global para atualizar a Home ou Navbar se necessário
+            // Avisa o restante do app que as informações deste usuário mudaram
             window.dispatchEvent(new Event('profileUpdated'))
             setTimeout(() => setShowSuccess(false), 3000)
         }, 800)
@@ -356,7 +350,7 @@ export default function DashboardPerfil() {
                     <div className="min-h-[20px]">
                         {showPasswordSuccess && (
                             <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 text-xs font-bold">
-                                <CheckCircle2 size={14} /> Senha updated com sucesso!
+                                <CheckCircle2 size={14} /> Senha atualizada com sucesso!
                             </div>
                         )}
                     </div>

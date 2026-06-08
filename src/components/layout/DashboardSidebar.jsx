@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import { Link, useLocation } from 'react-router-dom'
-import { Home, Sparkles, FileText, ShoppingCart, Pill, Heart, Bell, History, Settings, HelpCircle, ChevronLeft, Menu } from 'lucide-react'
+import { Home, Sparkles, FileText, ShoppingCart, Pill, Heart, Bell, History, Settings, HelpCircle, ChevronLeft, Menu, User } from 'lucide-react'
 import { useThemeContext } from '../../contexts/ThemeContext'
 
 // Importação do logotipo oficial fornecido da Aroê
@@ -18,6 +18,7 @@ const MENU_ITEMS = [
 ]
 
 const BOTTOM_MENU_ITEMS = [
+    { label: 'Perfil', icon: User, to: '/dashboard/perfil' },
     { label: 'Configurações', icon: Settings, to: '/dashboard/configuracoes' },
     { label: 'Ajuda e suporte', icon: HelpCircle, to: '/dashboard/ajuda' },
 ]
