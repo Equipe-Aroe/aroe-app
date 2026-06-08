@@ -70,11 +70,11 @@ export default function DashboardHeader({ onMenuClick, onNavigateSection }) {
         return () => window.removeEventListener('profileUpdated', handleProfileUpdate)
     }, [])
 
-    const handleLogout = () => {
-        // Limpa a sessão demo ao deslogar para não travar a aplicação no perfil da persona
-        localStorage.removeItem(DEMO_STORAGE_KEY)
-        navigate('/login')
-    }
+const handleLogout = () => {
+    localStorage.removeItem('@Aroe:demo_session');
+    localStorage.removeItem('@Aroe:dashboard_mode');
+    navigate('/login');
+}
 
     const handleMenuOptionClick = (sectionId) => {
         setIsProfileOpen(false)

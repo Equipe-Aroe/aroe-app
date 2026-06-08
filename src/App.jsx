@@ -21,6 +21,16 @@ import DashboardConfiguracoes from './pages/Dashboard/sections/Configuracoes'
 import DashboardAjuda from './pages/Dashboard/sections/Ajuda'
 import AriaIA from './pages/Dashboard/sections/AriaIA';
 import DashboardPerfil from './pages/Dashboard/sections/Perfil';
+// Pharmacy Dashboard Pages
+import DashboardPharmacy from './pages/Dashboard/sections/Pharmacy/DashboardHomePhamacy'
+import EstoquePharmacy from './pages/Dashboard/sections/Pharmacy/Estoque'
+import VendasPharmacy from './pages/Dashboard/sections/Pharmacy/Vendas'
+import ClientesPharmacy from './pages/Dashboard/sections/Pharmacy/Clientes'
+import RelatoriosPharmacy from './pages/Dashboard/sections/Pharmacy/Relatorios'
+import PreparacaoPharmacy from './pages/Dashboard/sections/Pharmacy/Preparar'
+import PharmacyProfile from './pages/Dashboard/sections/Pharmacy/Perfil'
+import PharmacyConfiguracoes from './pages/Dashboard/sections/Pharmacy/Configuracoes'
+import PharmacyHelp from './pages/Dashboard/sections/Pharmacy/Ajuda'
 
 function App() {
   const location = useLocation()
@@ -62,6 +72,16 @@ function App() {
           <Route path="perfil" element={<DashboardPerfil />} />
           <Route path="configuracoes" element={<DashboardConfiguracoes />} />
           <Route path="ajuda" element={<DashboardAjuda />} />
+          {/* Pharmacy Routes */}
+          <Route path="pharmacy/dashboard" element={<DashboardPharmacy />} />
+          <Route path="pharmacy/estoque" element={<EstoquePharmacy />} />
+          <Route path="pharmacy/vendas" element={<VendasPharmacy />} />
+          <Route path="pharmacy/clientes" element={<ClientesPharmacy />} />
+          <Route path="pharmacy/relatorios" element={<RelatoriosPharmacy />} />
+          <Route path="pharmacy/preparar" element={<PreparacaoPharmacy />} />
+          <Route path="pharmacy/perfil" element={<PharmacyProfile />} />
+          <Route path="pharmacy/configuracoes" element={<PharmacyConfiguracoes />} />
+          <Route path="pharmacy/ajuda" element={<PharmacyHelp />} />
         </Route>
       </Routes>
 

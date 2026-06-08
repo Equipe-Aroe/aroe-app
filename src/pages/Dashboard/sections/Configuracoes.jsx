@@ -6,10 +6,9 @@ import {
     CreditCard, 
     Globe, 
     ChevronRight,
-    Sun,
-    Moon,
     ArrowLeft,
-    CheckCircle2
+    CheckCircle2,
+    Briefcase
 } from 'lucide-react'
 import { useThemeContext } from '../../../contexts/ThemeContext'
 
@@ -18,29 +17,29 @@ const DEMO_STORAGE_KEY = '@Aroe:demo_session'
 const PREFERENCIAS_LISTA = [
     {
         id: 'notificacoes',
-        titulo: 'Central de Notificações',
-        descricao: 'Escolha como e quando deseja receber alertas de orçamentos e envios',
+        titulo: 'Central de Alertas',
+        descricao: 'Escolha como receber avisos de novos orçamentos solicitados por pacientes',
         icon: Bell,
         iconBg: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400'
     },
     {
         id: 'privacidade',
-        titulo: 'Privacidade & LGPD',
-        descricao: 'Gerencie seus consentimentos e dados partilhados com laboratórios',
+        titulo: 'Segurança & ANVISA / LGPD',
+        descricao: 'Gerencie normas de sigilo de receitas digitais e dados compartilhados',
         icon: Shield,
         iconBg: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400'
     },
     {
         id: 'pagamento',
-        titulo: 'Métodos de Pagamento',
-        descricao: 'Cadastre e altere os seus cartões de crédito para compras rápidas',
+        titulo: 'Repasses e Faturamento',
+        descricao: 'Configure a conta bancária para recebimento do ecossistema Aroê',
         icon: CreditCard,
         iconBg: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400'
     },
     {
         id: 'idioma',
         titulo: 'Idioma e Região',
-        descricao: 'Defina o idioma padrão do seu painel e formatos regionais',
+        descricao: 'Defina o fuso horário padrão para a contagem de SLA de entrega',
         icon: Globe,
         iconBg: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400'
     }
@@ -51,34 +50,27 @@ export default function DashboardConfiguracoes() {
     const [themeSelection, setThemeSelection] = useState(darkMode ? 'escuro' : 'claro')
     const [secaoAtiva, setSecaoAtiva] = useState(null)
     
-    // Estado para guardar os metadados do perfil identificado na sessão
     const [perfilIdentificado, setPerfilIdentificado] = useState({
         nome: 'Amanda',
+        tipo: 'paciente',
         isTitular: true
     })
 
-    // Captura a sessão igualzinho ao fluxo de tratamentos
     useEffect(() => {
         const demoDataRaw = localStorage.getItem(DEMO_STORAGE_KEY)
         if (demoDataRaw) {
             const session = JSON.parse(demoDataRaw)
-            const nomeUsuario = session.user?.nome || ''
+            const userObj = session.user || session
+            const nomeUsuario = userObj?.nome || ''
 
             if (nomeUsuario.includes('Ricardo')) {
-                setPerfilIdentificado({
-                    nome: 'Ricardo',
-                    isTitular: false
-                })
+                setPerfilIdentificado({ nome: 'Ricardo', tipo: 'paciente', isTitular: false })
             } else if (nomeUsuario.includes('Irene')) {
-                setPerfilIdentificado({
-                    nome: 'Dona Irene',
-                    isTitular: false
-                })
+                setPerfilIdentificado({ nome: 'Dona Irene', tipo: 'paciente', isTitular: false })
+            } else if (nomeUsuario.includes('Farmacia') || nomeUsuario.includes('Central')) {
+                setPerfilIdentificado({ nome: 'Farmácia Central', tipo: 'farmacia', isTitular: true })
             } else {
-                setPerfilIdentificado({
-                    nome: 'Amanda',
-                    isTitular: true
-                })
+                setPerfilIdentificado({ nome: 'Amanda', tipo: 'paciente', isTitular: true })
             }
         }
     }, [])
@@ -86,6 +78,8 @@ export default function DashboardConfiguracoes() {
     useEffect(() => {
         setThemeSelection(darkMode ? 'escuro' : 'claro')
     }, [darkMode])
+
+    const isFarmacia = perfilIdentificado.tipo === 'farmacia'
 
     const cardBgClass = highContrast
         ? 'bg-white text-black border-2 border-black dark:bg-black dark:text-white dark:border-white p-5 space-y-4 rounded-2xl'
@@ -95,17 +89,6 @@ export default function DashboardConfiguracoes() {
         ? 'border-b-2 border-black dark:border-white text-black dark:text-white py-3'
         : 'border-b border-slate-50 dark:border-slate-900/60 hover:bg-slate-50/40 dark:hover:bg-slate-900/20 py-3 px-2 rounded-xl transition-all cursor-pointer flex items-center justify-between'
 
-    const bannerBgClass = highContrast
-        ? 'bg-white text-black border-4 border-black dark:bg-black dark:text-white dark:border-white'
-        : 'bg-slate-50/60 dark:bg-slate-900/40 border border-slate-100/60 dark:border-slate-800/40'
-
-    const handleThemeChange = (type) => {
-        setThemeSelection(type)
-        if ((type === 'escuro' && !darkMode) || (type === 'claro' && darkMode)) {
-            toggleDarkMode()
-        }
-    }
-
     const renderConteudoSecao = () => {
         switch (secaoAtiva) {
             case 'notificacoes':
@@ -113,64 +96,56 @@ export default function DashboardConfiguracoes() {
                     <div className="space-y-3 text-xs animate-in fade-in duration-200">
                         <label className="flex items-center gap-3 cursor-pointer p-1">
                             <input type="checkbox" defaultChecked className="rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4" />
-                            <span>Receber alertas em tempo real sobre novos orçamentos de fórmulas para <strong>{perfilIdentificado.nome}</strong></span>
+                            <span>{isFarmacia 
+                                ? 'Notificar via e-mail a cada nova receita enviada para cotação.' 
+                                : `Receber alertas sobre orçamentos para ${perfilIdentificado.nome}`}</span>
                         </label>
                         <label className="flex items-center gap-3 cursor-pointer p-1">
                             <input type="checkbox" defaultChecked className="rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4" />
-                            <span>Notificações automáticas de atualizações de frete e produção deste perfil</span>
+                            <span>{isFarmacia 
+                                ? 'Alertar o laboratório quando o prazo de manipulação (SLA) estiver perto do limite.' 
+                                : 'Notificações automáticas de atualizações de frete.'}</span>
                         </label>
-                        {!perfilIdentificado.isTitular && (
-                            <label className="flex items-center gap-3 cursor-pointer p-1 border-t border-slate-100 dark:border-slate-800/60 pt-2 mt-2">
-                                <input type="checkbox" defaultChecked className="rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4" />
-                                <span className="text-purple-600 dark:text-purple-400 font-medium">Notificar também o e-mail principal do titular em caso de urgências médicas</span>
-                            </label>
-                        )}
                     </div>
                 )
             case 'privacidade':
                 return (
                     <div className="space-y-4 text-xs animate-in fade-in duration-200">
                         <p className="text-slate-500 dark:text-slate-400 leading-relaxed">
-                            Em conformidade com a LGPD, o Aroê garante total transparência sobre o uso dos dados de saúde associados ao perfil de <strong>{perfilIdentificado.nome}</strong>.
+                            {isFarmacia 
+                                ? 'Os dados recebidos dos pacientes estão resguardados sob o sigilo médico-farmacêutico e diretrizes gerais de compliance da ANVISA.'
+                                : `O Aroê garante total transparência sobre o uso dos dados de saúde de ${perfilIdentificado.nome}.`}
                         </p>
-                        <label className="flex items-center gap-3 cursor-pointer p-1">
-                            <input type="checkbox" defaultChecked className="rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4" />
-                            <span>Permitir que farmácias parceiras analisem o histórico fisiológico para fins de segurança de interação medicamentosa.</span>
-                        </label>
-                        <button className="text-xs font-bold text-rose-500 hover:underline block pt-2">
-                            {perfilIdentificado.isTitular 
-                                ? 'Solicitar revogação ou eliminação total de meus dados cadastrais' 
-                                : `Solicitar a revogação de compartilhamento e exclusão dos dados de ${perfilIdentificado.nome}`}
-                        </button>
+                        {isFarmacia && (
+                            <label className="flex items-center gap-3 cursor-pointer p-1">
+                                <input type="checkbox" defaultChecked className="rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4" />
+                                <span>Bloquear download local de receitas com dados sensíveis de pacientes (Recomendado).</span>
+                            </label>
+                        )}
                     </div>
                 )
             case 'pagamento':
                 return (
                     <div className="space-y-3 animate-in fade-in duration-200">
-                        {perfilIdentificado.isTitular ? (
+                        {isFarmacia ? (
                             <>
                                 <div className="border border-slate-100 dark:border-slate-800/60 p-4 rounded-xl flex items-center justify-between text-xs">
                                     <div className="flex items-center gap-3">
-                                        <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg font-mono font-bold tracking-wider">•••• 4321</div>
+                                        <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg font-mono font-bold">Banco PJ</div>
                                         <div>
-                                            <p className="font-bold">Visa Classic (Principal)</p>
-                                            <p className="text-[10px] text-slate-400">Expira em: 12/29</p>
+                                            <p className="font-bold">Agência: 0001 | Conta: 99843-2</p>
+                                            <p className="text-[10px] text-slate-400">Banco Itaú Unibanco S.A.</p>
                                         </div>
                                     </div>
-                                    <span className="text-[10px] bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400 px-2 py-0.5 rounded font-bold">Ativo</span>
+                                    <span className="text-[10px] bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400 px-2 py-0.5 rounded font-bold">Padrão</span>
                                 </div>
                                 <button className="bg-emerald-600 text-white text-xs font-bold px-4 py-2 rounded-xl hover:bg-emerald-700 transition-colors">
-                                    Adicionar Novo Cartão
+                                    Alterar Domicílio Bancário
                                 </button>
                             </>
                         ) : (
                             <div className="space-y-2">
-                                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                                    Os custos e orçamentos do perfil de <strong>{perfilIdentificado.nome}</strong> são gerenciados e cobrados diretamente através do método de pagamento principal do titular da conta.
-                                </p>
-                                <div className="border border-dashed border-slate-200 dark:border-slate-800 p-4 rounded-xl text-center text-xs text-slate-400">
-                                    Nenhum método de faturamento isolado atribuído para este dependente.
-                                </div>
+                                <p className="text-xs text-slate-400">Cartão Visa cadastrado final 4321</p>
                             </div>
                         )}
                     </div>
@@ -178,7 +153,7 @@ export default function DashboardConfiguracoes() {
             default:
                 return (
                     <div className="text-xs text-slate-400 p-4 border border-dashed rounded-xl text-center">
-                        Funcionalidade de {PREFERENCIAS_LISTA.find(p => p.id === secaoAtiva)?.titulo} para {perfilIdentificado.nome} em homologação.
+                        Funcionalidade em homologação para {perfilIdentificado.nome}.
                     </div>
                 )
         }
@@ -189,35 +164,24 @@ export default function DashboardConfiguracoes() {
             <div className="flex flex-col gap-1">
                 <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Configurações</h2>
                 <p className="text-sm text-slate-500 dark:text-slate-400">
-                    Personalize as preferências, segurança e privacidade do perfil de <strong>{perfilIdentificado.nome}</strong>
+                    Personalize o comportamento do seu painel corporativo ou pessoal.
                 </p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-                
-                {/* LISTA DE PREFERÊNCIAS / CONTEÚDO DINÂMICO */}
                 <div className="lg:col-span-2 space-y-5">
                     <div className="flex items-center gap-3">
                         {secaoAtiva !== null && (
-                            <button 
-                                onClick={() => setSecaoAtiva(null)}
-                                className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-500 transition-colors"
-                            >
+                            <button onClick={() => setSecaoAtiva(null)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-500 transition-colors">
                                 <ArrowLeft size={16} />
                             </button>
                         )}
                         <div>
                             <h3 className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">
                                 {secaoAtiva === null 
-                                    ? `Preferências Gerais da Conta (${perfilIdentificado.nome})` 
-                                    : `${PREFERENCIAS_LISTA.find(p => p.id === secaoAtiva)?.titulo} — ${perfilIdentificado.nome}`
-                                }
+                                    ? `Preferências Gerais (${perfilIdentificado.nome})` 
+                                    : `${PREFERENCIAS_LISTA.find(p => p.id === secaoAtiva)?.titulo}`}
                             </h3>
-                            {secaoAtiva !== null && (
-                                <p className="text-xs text-slate-400 dark:text-slate-500">
-                                    {PREFERENCIAS_LISTA.find(p => p.id === secaoAtiva)?.descricao}
-                                </p>
-                            )}
                         </div>
                     </div>
 
@@ -225,19 +189,24 @@ export default function DashboardConfiguracoes() {
                         <div className="space-y-1">
                             {PREFERENCIAS_LISTA.map((item) => {
                                 const IconComponent = item.icon
+                                // Altera os labels textuais em tempo de renderização caso seja farmácia
+                                let tituloFinal = item.titulo
+                                let descFinal = item.descricao
+                                
+                                if (isFarmacia && item.id === 'pagamento') {
+                                    tituloFinal = 'Dados para Repasse PIX/Ted'
+                                    descFinal = 'Gerencie as contas bancárias onde recebe os pagamentos dos pedidos'
+                                }
+
                                 return (
-                                    <div
-                                        key={item.id}
-                                        onClick={() => setSecaoAtiva(item.id)}
-                                        className={rowItemClass}
-                                    >
+                                    <div key={item.id} onClick={() => setSecaoAtiva(item.id)} className={rowItemClass}>
                                         <div className="flex items-center gap-3">
                                             <div className={`p-2 rounded-xl ${item.iconBg} shrink-0`}>
                                                 <IconComponent size={16} />
                                             </div>
                                             <div className="text-left">
-                                                <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">{item.titulo}</h4>
-                                                <p className="text-[11px] text-slate-400 dark:text-slate-500 leading-tight">{item.descricao}</p>
+                                                <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">{tituloFinal}</h4>
+                                                <p className="text-[11px] text-slate-400 dark:text-slate-500 leading-tight">{descFinal}</p>
                                             </div>
                                         </div>
                                         <ChevronRight size={14} className="text-slate-400" />
@@ -252,48 +221,18 @@ export default function DashboardConfiguracoes() {
                     )}
                 </div>
 
-                {/* PAINEL LATERAL DE TEMA E INTERFACE (Global do Sistema) */}
+                {/* ABA LATERAL DE TEMA */}
                 <div className={cardBgClass}>
-                    <div className="border-b border-slate-100 dark:border-slate-800 pb-2">
-                        <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Aparência do Painel</h4>
-                    </div>
-
-                    <div className={`p-3 rounded-xl flex items-center justify-between text-xs ${bannerBgClass}`}>
-                        <span className="font-medium text-slate-600 dark:text-slate-400">Alto Contraste</span>
-                        <span className="font-bold text-purple-600 dark:text-purple-400">
-                            {highContrast ? 'ATIVADO' : 'DESATIVADO'}
-                        </span>
-                    </div>
-
-                    <div className="space-y-2 pt-1">
-                        <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Tema Visual</label>
-                        <div className="grid grid-cols-2 gap-2">
-                            <button
-                                type="button"
-                                onClick={() => handleThemeChange('claro')}
-                                className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
-                                    themeSelection === 'claro'
-                                        ? 'border-emerald-500 bg-emerald-50/40 text-emerald-600 dark:bg-emerald-950/20'
-                                        : 'border-slate-100 dark:border-slate-800 text-slate-500 hover:bg-slate-50'
-                                }`}
-                            >
-                                <Sun size={14} /> Claro
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => handleThemeChange('escuro')}
-                                className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
-                                    themeSelection === 'escuro'
-                                        ? 'border-emerald-500 bg-emerald-50/40 text-emerald-400 dark:bg-emerald-950/20'
-                                        : 'border-slate-100 dark:border-slate-800 text-slate-500 hover:bg-slate-50'
-                                }`}
-                            >
-                                <Moon size={14} /> Escuro
-                            </button>
-                        </div>
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">Aparência do Painel</h3>
+                    <div className="grid grid-cols-2 gap-2">
+                        <button onClick={() => toggleDarkMode()} className={`p-3 text-xs rounded-xl border flex flex-col items-center gap-2 ${!darkMode ? 'border-purple-500 bg-purple-50/50 text-purple-700' : 'border-slate-200 dark:border-slate-800'}`}>
+                            Claro
+                        </button>
+                        <button onClick={() => toggleDarkMode()} className={`p-3 text-xs rounded-xl border flex flex-col items-center gap-2 ${darkMode ? 'border-purple-400 bg-purple-950/20 text-purple-400' : 'border-slate-200 dark:border-slate-800'}`}>
+                            Escuro
+                        </button>
                     </div>
                 </div>
-
             </div>
         </div>
     )

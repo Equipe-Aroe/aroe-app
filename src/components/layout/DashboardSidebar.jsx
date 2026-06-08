@@ -1,12 +1,13 @@
 /* eslint-disable react/prop-types */
+import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Home, Sparkles, FileText, ShoppingCart, Pill, Heart, Bell, History, Settings, HelpCircle, ChevronLeft, Menu, User } from 'lucide-react'
+import { Home, Sparkles, FileText, ShoppingCart, Pill, Heart, Bell, History, Settings, HelpCircle, ChevronLeft, Menu, User, BarChart3, Users, Boxes, PackageCheck, Store } from 'lucide-react'
 import { useThemeContext } from '../../contexts/ThemeContext'
 
 // Importação do logotipo oficial fornecido da Aroê
 import aroeLogo from '/pill-logo.png' 
 
-const MENU_ITEMS = [
+const PATIENT_MENU_ITEMS = [
     { label: 'Início', icon: Home, to: '/dashboard' },
     { label: 'Ária IA', icon: Sparkles, to: '/dashboard/aria' },
     { label: 'Receitas', icon: FileText, to: '/dashboard/receitas' },
@@ -17,17 +18,39 @@ const MENU_ITEMS = [
     { label: 'Histórico', icon: History, to: '/dashboard/historico' },
 ]
 
+const PHARMACY_MENU_ITEMS = [
+    { label: 'Início', icon: Home, to: '/dashboard/pharmacy/dashboard' },
+    { label: 'Estoque', icon: Boxes, to: '/dashboard/pharmacy/estoque' },
+    { label: 'Vendas', icon: Store, to: '/dashboard/pharmacy/vendas' },
+    { label: 'Clientes', icon: Users, to: '/dashboard/pharmacy/clientes' },
+    { label: 'Preparar', icon: PackageCheck, to: '/dashboard/pharmacy/preparar' },
+    { label: 'Relatórios', icon: BarChart3, to: '/dashboard/pharmacy/relatorios' },
+]
+
 const BOTTOM_MENU_ITEMS = [
     { label: 'Perfil', icon: User, to: '/dashboard/perfil' },
     { label: 'Configurações', icon: Settings, to: '/dashboard/configuracoes' },
     { label: 'Ajuda e suporte', icon: HelpCircle, to: '/dashboard/ajuda' },
 ]
 
+const PHARMACY_BOTTOM_MENU_ITEMS = [
+    { label: 'Perfil', icon: User, to: '/dashboard/pharmacy/perfil' },
+    { label: 'Configurações', icon: Settings, to: '/dashboard/pharmacy/configuracoes' },
+    { label: 'Ajuda e suporte', icon: HelpCircle, to: '/dashboard/pharmacy/ajuda' },
+]
+
 export default function DashboardSidebar({ isOpen, setIsOpen }) {
     const location = useLocation()
     const { highContrast } = useThemeContext()
+    
+    // Lendo diretamente do localStorage para garantir que pegue o valor atualizado
+    const mode = localStorage.getItem('@Aroe:dashboard_mode') || 'patient'
 
     const isActive = (path) => location.pathname === path
+
+    // Definição dinâmica dos itens com base no modo selecionado
+    const MENU_ITEMS = mode === 'pharmacy' ? PHARMACY_MENU_ITEMS : PATIENT_MENU_ITEMS
+    const BOTTOM_ITEMS = mode === 'pharmacy' ? PHARMACY_BOTTOM_MENU_ITEMS : BOTTOM_MENU_ITEMS
 
     // Ajuste Clean: Saem os gradientes escuros pesados e entram fundos minimalistas e sofisticados
     const sidebarBgClass = highContrast
@@ -57,7 +80,7 @@ export default function DashboardSidebar({ isOpen, setIsOpen }) {
                 }`}
             >
                 <div>
-                    {/* Header: Substituído o quadrado genérico pelo Logo original em formato de Cápsula */}
+                    {/* Header: Logo oficial em formato de Cápsula */}
                     <div className={`flex items-center justify-between mb-8 ${!isOpen && 'md:flex-col md:gap-4 md:justify-center'}`}>
                         <div className="flex items-center gap-2.5">
                             <div className="w-9 h-9 flex items-center justify-center overflow-hidden shrink-0">
@@ -87,7 +110,6 @@ export default function DashboardSidebar({ isOpen, setIsOpen }) {
                             const Icon = item.icon
                             const active = isActive(item.to)
                             
-                            // Estilo Clean: Item ativo ganha fundo suave e uma borda esquerda elegante
                             const activeClass = highContrast
                                 ? active 
                                     ? 'bg-black text-white dark:bg-white dark:text-black border-2 border-black dark:border-white font-black' 
@@ -133,9 +155,9 @@ export default function DashboardSidebar({ isOpen, setIsOpen }) {
                     </nav>
                 </div>
 
-                {/* Menu inferior */}
+                {/* Menu inferior dinâmico */}
                 <nav className={`space-y-1 border-t pt-4 ${highContrast ? 'border-black/30 dark:border-white/30' : 'border-gray-100 dark:border-slate-900'}`}>
-                    {BOTTOM_MENU_ITEMS.map((item) => {
+                    {BOTTOM_ITEMS.map((item) => {
                         const Icon = item.icon
                         const active = isActive(item.to)
 

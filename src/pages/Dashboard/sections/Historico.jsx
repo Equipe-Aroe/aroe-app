@@ -14,21 +14,17 @@ import { useThemeContext } from '../../../contexts/ThemeContext'
 
 const DEMO_STORAGE_KEY = '@Aroe:demo_session'
 
-// Base de dados mockada e segregada por perfil para simulação na Demo
+// Base de dados com Amanda como perfil padrão
 const DADOS_HISTORICO_POR_PERFIL = {
-    farmacia: {
-        resumo: { pedidos: 8, receitas: 6, concluidos: 3, cumprimento: '92%' },
-        economia: '312,45',
+    amanda: {
+        resumo: { pedidos: 5, receitas: 3, concluidos: 2, cumprimento: '95%' },
+        economia: '215,30',
         maio: [
-            { id: 1, categoria: 'orçamentos', titulo: 'Receita enviada', descricao: 'Sua receita "Magnésio Quelato + B6" foi enviada para as farmácias', data: '28/05/2025', hora: '14:30', icon: FileText, iconBg: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400' },
-            { id: 2, categoria: 'pedidos', titulo: 'Pedido entregue', descricao: 'Seu pedido de suplementação foi entregue no endereço cadastrado', data: '25/05/2025', hora: '11:15', icon: Box, iconBg: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400' },
-            { id: 3, categoria: 'tratamentos', titulo: 'Tratamento atualizado', descricao: 'Progresso do tratamento "Enzimas Digestivas" atualizado', data: '20/05/2025', hora: '09:00', icon: Leaf, iconBg: 'bg-teal-50 text-teal-600 dark:bg-teal-950/40 dark:text-teal-400' },
-            { id: 4, categoria: 'lembretes', titulo: 'Lembrete criado', descricao: 'Você criou um lembrete para "Vitaminas D" às 08:00', data: '15/05/2025', hora: '18:22', icon: Bell, iconBg: 'bg-orange-50 text-orange-500 dark:bg-orange-950/40 dark:text-orange-400' },
-            { id: 5, categoria: 'orçamentos', titulo: 'Orçamento recebido', descricao: '3 novas farmácias enviaram orçamentos para seu pedido #1234', data: '10/05/2025', hora: '16:05', icon: Tag, iconBg: 'bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400' }
+            { id: 401, categoria: 'pedidos', titulo: 'Pedido em transporte', descricao: 'Seu pedido de dermocosméticos está a caminho', data: '27/05/2025', hora: '09:30', icon: Box, iconBg: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400' },
+            { id: 402, categoria: 'tratamentos', titulo: 'Início de ciclo', descricao: 'Novo ciclo de suplementação capilar iniciado', data: '22/05/2025', hora: '08:00', icon: Leaf, iconBg: 'bg-teal-50 text-teal-600 dark:bg-teal-950/40 dark:text-teal-400' }
         ],
         abril: [
-            { id: 6, categoria: 'orçamentos', titulo: 'Receita enviada', descricao: 'Sua receita "Complexo B Concentrado" foi homologada', data: '28/04/2025', hora: '10:30', icon: FileText, iconBg: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400' },
-            { id: 7, categoria: 'pedidos', titulo: 'Pedido realizado', descricao: 'Seu pedido #12220 foi realizado com sucesso', data: '14/04/2025', hora: '15:40', icon: Box, iconBg: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400' }
+            { id: 403, categoria: 'orçamentos', titulo: 'Orçamento aceito', descricao: 'Orçamento de manipulados aprovado com sucesso', data: '15/04/2025', hora: '14:20', icon: Tag, iconBg: 'bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400' }
         ]
     },
     irene: {
@@ -58,10 +54,9 @@ const DADOS_HISTORICO_POR_PERFIL = {
 
 export default function DashboardHistorico() {
     const { highContrast } = useThemeContext()
-    const [perfilAtivo, setPerfilAtivo] = useState('farmacia')
+    const [perfilAtivo, setPerfilAtivo] = useState('amanda') // Default para Amanda
     const [activeTab, setActiveTab] = useState('todos')
 
-    // Detecta automaticamente a sessão do demo no localStorage
     useEffect(() => {
         const demoDataRaw = localStorage.getItem(DEMO_STORAGE_KEY)
         
@@ -74,17 +69,17 @@ export default function DashboardHistorico() {
             } else if (nomeUsuario.includes('Ricardo')) {
                 setPerfilAtivo('ricardo')
             } else {
-                setPerfilAtivo('farmacia') // Default/Minha conta
+                setPerfilAtivo('amanda') // Fallback
             }
         }
     }, [])
 
-    // Efeito para resetar o filtro de categoria ao alternar perfis automaticamente
+    // ... restante do componente permanece igual
     useEffect(() => {
         setActiveTab('todos')
     }, [perfilAtivo])
 
-    // Estilizações de Alto Contraste dinâmicas
+    // Estilizações e renderização (mantidas conforme estrutura anterior)
     const cardBgClass = highContrast
         ? 'bg-white text-black border-2 border-black dark:bg-black dark:text-white dark:border-white p-5 space-y-4 rounded-2xl'
         : 'bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/60 shadow-sm rounded-2xl p-5 space-y-4'

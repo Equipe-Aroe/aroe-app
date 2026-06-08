@@ -1,375 +1,296 @@
-import { useState, useEffect } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { 
-    User, 
-    Mail, 
-    Fingerprint, 
-    MapPin, 
-    Save, 
-    CheckCircle2, 
+    CheckCircle, 
+    Package, 
+    Truck, 
+    Box, 
+    Heart, 
+    ChevronRight, 
     Loader2,
-    ShieldAlert,
-    Scale,
-    Ruler,
-    Lock
+    Activity // Corrigido: importando o ícone correto diretamente do lucide
 } from 'lucide-react'
 import { useThemeContext } from '../../../contexts/ThemeContext'
+import Tesseract from 'tesseract.js'
 
-// Alinhado exatamente com a sua DashboardHome
 const DEMO_STORAGE_KEY = '@Aroe:demo_session'
 
-// Base de dados clínicos simulados para enriquecer a apresentação
-const DEMO_DATABASE = {
+// Base de dados simulada estruturada pelas chaves lidas na sessão
+const DADOS_HOME_POR_PERFIL = {
+    amanda: {
+        nome: 'Amanda',
+        mensagemWelcome: 'Sua saúde está em dia. Você tem <span class="font-bold text-white underline decoration-wavy decoration-emerald-400">1 pedido</span> em andamento e suas receitas foram validadas.',
+        orders: [
+            {
+                id: 1,
+                productName: 'Vitaminas A-Z',
+                formula: 'Fórmula manipulada em cápsulas',
+                status: 'Recebido',
+                statusDate: '10/12',
+                nextStatus: 'Em Produção',
+                nextDate: '11/12',
+                price: 'R$ 43,50',
+                pharmacies: 3,
+                farmaciaDestaque: 'Farmácia Bem Viver',
+                stepAtivo: 1
+            }
+        ]
+    },
     irene: {
-        nome: 'Irene Souza Silva',
-        email: 'dona.irene@exemplo.com',
-        cpf: '987.654.321-11',
-        endereco: 'Av. Paulista, 1500 - Bela Vista, São Paulo - SP',
-        peso: '74',
-        altura: '1.58',
-        alergias: 'Hipertensa. Alergia severa a Corante Tartrazina e AAS (Ácido Acetilsalicílico).'
+        nome: 'Dona Irene',
+        mensagemWelcome: 'Monitore os cuidados de sua mãe. Há <span class="font-bold text-white underline decoration-wavy decoration-emerald-400">1 pedido</span> em produção urgente de anti-hipertensivos.',
+        orders: [
+            {
+                id: 2,
+                productName: 'Probióticos + Protetor Coronário',
+                formula: 'Fórmula em sachês de absorção rápida',
+                status: 'Produção',
+                statusDate: '06/06',
+                nextStatus: 'Pronto para Envio',
+                nextDate: '09/06',
+                price: 'R$ 112,90',
+                pharmacies: 5,
+                farmaciaDestaque: 'Naturale Manipulação',
+                stepAtivo: 2
+            }
+        ]
     },
     ricardo: {
-        nome: 'Ricardo Almeida Prado',
-        email: 'ricardo.prado@exemplo.com',
-        cpf: '456.123.789-55',
-        endereco: 'Rua dos Pinheiros, 840 - Pinheiros, São Paulo - SP',
-        peso: '88',
-        altura: '1.82',
-        alergias: 'Diabético Tipo 2. Intolerância a Lactose (utilizar cápsulas livres de excipientes com lactose).'
-    },
-    amanda: {
-        nome: 'Amanda Santos de Carvalho',
-        email: 'amanda.santos@exemplo.com',
-        cpf: '123.456.789-00',
-        endereco: 'Rua das Flores, 123 - Centro, São Paulo - SP',
-        peso: '62',
-        altura: '1.65',
-        alergias: 'Nenhuma alergia grave relatada. Sensibilidade a corantes artificiais.'
+        nome: 'Ricardo',
+        mensagemWelcome: 'Seu dependente possui <span class="font-bold text-white underline decoration-wavy decoration-slate-400">0 pedidos</span> ativos no momento. Faça um novo orçamento abaixo.',
+        orders: []
     }
 }
 
-const getLoggedProfile = () => {
-    const demoDataRaw = localStorage.getItem(DEMO_STORAGE_KEY)
-    
-    if (!demoDataRaw) {
-        return DEMO_DATABASE.amanda
-    }
-
-    try {
-        const session = JSON.parse(demoDataRaw)
-        // Acessa exatamente a mesma estrutura usada na Home: session.user.nome
-        const nomeUsuario = session.user?.nome || ''
-        const emailUsuario = session.user?.email || ''
-
-        // Faz o mapeamento e mescla com a base clínica simulada correspondente
-        if (nomeUsuario.includes('Irene')) {
-            return { ...DEMO_DATABASE.irene, ...session.user, nome: nomeUsuario }
-        } 
-        
-        if (nomeUsuario.includes('Ricardo')) {
-            return { ...DEMO_DATABASE.ricardo, ...session.user, nome: nomeUsuario }
-        }
-
-        // Caso padrão / Amanda
-        return { ...DEMO_DATABASE.amanda, ...session.user, nome: nomeUsuario || DEMO_DATABASE.amanda.nome }
-
-    } catch (e) {
-        console.error("Erro ao ler sessão no Perfil:", e)
-        return DEMO_DATABASE.amanda
-    }
-}
-
-export default function DashboardPerfil() {
+export default function DashboardHome() {
     const { highContrast } = useThemeContext()
+    const fileInputRef = useRef(null)
     
-    // Inicia o estado capturando o usuário correto da demo
-    const [profile, setProfile] = useState(() => getLoggedProfile())
+    // Estado do perfil controlado de forma silenciosa via Session
+    const [perfilAtivo, setPerfilAtivo] = useState('amanda') 
+    const [isProcessing, setIsProcessing] = useState(false)
+    const [ocrResult, setOcrResult] = useState(null)
 
-    const [isSaving, setIsSaving] = useState(false)
-    const [showSuccess, setShowSuccess] = useState(false)
-    const [passwordData, setPasswordData] = useState({ atual: '', nova: '', confirmar: '' })
-    const [isChangingPassword, setIsChangingPassword] = useState(false)
-    const [showPasswordSuccess, setShowPasswordSuccess] = useState(false)
-
-    // Atualiza instantaneamente se o usuário alternar de perfil em tempo de execução
+    // Captura os dados injetados da Persona no ciclo de vida da aplicação
     useEffect(() => {
-        const handleExternalUpdate = () => {
-            setProfile(getLoggedProfile())
+        const demoDataRaw = localStorage.getItem(DEMO_STORAGE_KEY)
+        
+        if (demoDataRaw) {
+            const session = JSON.parse(demoDataRaw)
+            const nomeUsuario = session.user?.nome || ''
+
+            if (nomeUsuario.includes('Ricardo')) {
+                setPerfilAtivo('ricardo')
+            } else if (nomeUsuario.includes('Irene')) {
+                setPerfilAtivo('irene')
+            } else {
+                setPerfilAtivo('amanda')
+            }
         }
-        window.addEventListener('profileUpdated', handleExternalUpdate)
-        return () => window.removeEventListener('profileUpdated', handleExternalUpdate)
+        // Reseta o OCR caso mude de sessão em testes rápidos
+        setOcrResult(null)
     }, [])
 
-    const maskCPF = (value) => {
-        return value
-            .replace(/\D/g, '') 
-            .replace(/(\d{3})(\d)/, '$1.$2')
-            .replace(/(\d{3})(\d)/, '$1.$2')
-            .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
-            .substring(0, 14)
-    }
+    // Resgate seguro de dados evitando quebras de objetos indefinidos
+    const dadosPerfil = DADOS_HOME_POR_PERFIL[perfilAtivo] || DADOS_HOME_POR_PERFIL['amanda']
 
-    const handleChange = (e) => {
-        const { name, value } = e.target
-        setProfile(prev => ({
-            ...prev,
-            [name]: name === 'cpf' ? maskCPF(value) : value
-        }))
-    }
+    const handleOcrProcess = async (event) => {
+        const file = event.target.files[0]
+        if (!file) return
 
-    const handleSave = (e) => {
-        e.preventDefault()
-        setIsSaving(true)
+        setIsProcessing(true)
+        setOcrResult(null)
 
-        setTimeout(() => {
-            // Atualiza o localStorage mantendo a estrutura original da sua Demo Session
-            const currentSessionRaw = localStorage.getItem(DEMO_STORAGE_KEY)
-            let updatedSession = {}
-            
-            if (currentSessionRaw) {
-                updatedSession = JSON.parse(currentSessionRaw)
-            }
-            
-            updatedSession.user = {
-                ...updatedSession.user,
-                ...profile
-            }
-
-            localStorage.setItem(DEMO_STORAGE_KEY, JSON.stringify(updatedSession))
-            setIsSaving(false)
-            setShowSuccess(true)
-            
-            // Dispara o evento global para atualizar a Home ou Navbar se necessário
-            window.dispatchEvent(new Event('profileUpdated'))
-            setTimeout(() => setShowSuccess(false), 3000)
-        }, 800)
-    }
-
-    const handlePasswordSubmit = (e) => {
-        e.preventDefault()
-        if (!passwordData.nova || passwordData.nova !== passwordData.confirmar) {
-            alert('As senhas não coincidem!')
-            return
+        try {
+            const imageUrl = URL.createObjectURL(file)
+            const result = await Tesseract.recognize(imageUrl, 'por')
+            setOcrResult(result.data.text)
+        } catch (error) {
+            console.error("Erro na leitura:", error)
+            alert("Não foi possível ler a imagem. Tente uma foto mais nítida.")
+        } finally {
+            setIsProcessing(false)
+            if (fileInputRef.current) fileInputRef.current.value = '' 
         }
-
-        setIsChangingPassword(true)
-        setTimeout(() => {
-            setIsChangingPassword(false)
-            setPasswordData({ atual: '', nova: '', confirmar: '' })
-            setShowPasswordSuccess(true)
-            setTimeout(() => setShowPasswordSuccess(false), 3000)
-        }, 1000)
     }
 
-    const getInitials = (name) => {
-        if (!name) return 'PA'
-        const parts = name.trim().split(' ')
-        if (parts.length > 1) {
-            return `${parts[0].charAt(0)}${parts[parts.length - 1].charAt(0)}`.toUpperCase()
-        }
-        return parts[0].substring(0, 2).toUpperCase()
+    const styles = {
+        card: highContrast
+            ? 'bg-white text-black border-4 border-black dark:bg-black dark:text-white dark:border-white shadow-none'
+            : 'bg-white/80 dark:bg-slate-900/50 backdrop-blur-md border border-slate-200 dark:border-slate-800 shadow-sm',
+        welcomeCard: highContrast
+            ? 'bg-black text-white p-8 rounded-2xl'
+            : perfilAtivo === 'irene' 
+                ? 'bg-gradient-to-r from-rose-600 to-orange-600 p-8 rounded-2xl text-white shadow-lg shadow-rose-200 dark:shadow-none'
+                : perfilAtivo === 'ricardo'
+                ? 'bg-gradient-to-r from-blue-600 to-cyan-600 p-8 rounded-2xl text-white shadow-lg shadow-blue-200 dark:shadow-none'
+                : 'bg-gradient-to-r from-purple-600 to-indigo-600 p-8 rounded-2xl text-white shadow-lg shadow-purple-200 dark:shadow-none',
+        statusActive: 'bg-emerald-500 text-white',
+        statusNext: 'bg-purple-100 text-purple-600 border-2 border-purple-200 dark:bg-purple-900/30 dark:border-purple-800 dark:text-purple-400',
+        statusInactive: 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-600',
+        textPrimary: highContrast ? 'text-black dark:text-white font-bold' : 'text-slate-900 dark:text-slate-100',
+        textSecondary: highContrast ? 'text-black/90 dark:text-white/80' : 'text-slate-500 dark:text-slate-400',
     }
-
-    const cardBgClass = highContrast
-        ? 'bg-white text-black border-2 border-black dark:bg-black dark:text-white dark:border-white'
-        : 'bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/60 shadow-sm'
-
-    const inputClass = highContrast
-        ? 'border-2 border-black bg-white text-black dark:border-white dark:bg-black dark:text-white focus:outline-none p-2.5 rounded-xl w-full text-sm'
-        : 'bg-slate-50 dark:bg-slate-900 border border-transparent dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-950 focus:outline-none focus:ring-2 focus:ring-purple-500/20 dark:focus:ring-purple-400/20 transition-all text-sm rounded-xl w-full px-4 py-2.5'
-
-    const personalFields = [
-        { label: 'Nome Completo', name: 'nome', type: 'text', icon: <User size={12} />, required: true },
-        { label: 'E-mail de Contato', name: 'email', type: 'email', icon: <Mail size={12} />, required: true },
-        { label: 'CPF', name: 'cpf', type: 'text', icon: <Fingerprint size={12} />, required: true },
-        { label: 'Endereço de Entrega', name: 'endereco', type: 'text', icon: <MapPin size={12} />, required: false },
-    ]
 
     return (
-        <div className="space-y-6 max-w-4xl mx-auto pb-12">
-            {/* Cabeçalho de Secção */}
-            <div className="flex flex-col gap-1 px-2">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Meu Perfil</h2>
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                    Gerencie suas informações cadastrais, fisiológicas e clínicas essenciais.
-                </p>
-            </div>
+        <div className="max-w-6xl mx-auto space-y-6 transition-colors duration-500 pb-10">
+            {/* Input File Escondido */}
+            <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleOcrProcess} 
+                accept="image/*" 
+                className="hidden" 
+            />
 
-            {/* Banner de Resumo Rápido */}
-            <div className={`p-6 rounded-2xl flex flex-col sm:flex-row items-center gap-5 transition-all ${cardBgClass}`}>
-                <div className="w-20 h-20 rounded-full bg-purple-100 dark:bg-purple-950/40 flex items-center justify-center text-purple-600 dark:text-purple-400 font-bold text-2xl tracking-wider border-2 border-purple-500/20 shrink-0">
-                    {getInitials(profile.nome)}
-                </div>
-                <div className="text-center sm:text-left space-y-1">
-                    <h3 className="text-xl font-bold text-slate-900 dark:text-white leading-tight">
-                        {profile.nome || 'Nome não informado'}
-                    </h3>
-                    <p className="text-sm text-slate-400 dark:text-slate-500 font-medium">
-                        {profile.email || 'E-mail não informado'}
-                    </p>
-                    <div className="flex flex-wrap gap-2 justify-center sm:justify-start pt-1">
-                        <span className="inline-block bg-purple-50 dark:bg-purple-950/40 px-2.5 py-0.5 rounded-full text-xs font-semibold text-purple-600 dark:text-purple-400">
-                            Paciente Digital Aroê
-                        </span>
-                        {Number(profile.peso) > 0 && Number(profile.altura) > 0 && (
-                            <span className="inline-block bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 rounded-full text-xs font-medium text-slate-500 dark:text-slate-400">
-                                IMC: {(Number(profile.peso) / (Number(profile.altura) * Number(profile.altura))).toFixed(1)}
-                            </span>
-                        )}
-                    </div>
+            {/* Seção de Boas-vindas Dinâmica */}
+            <div className={styles.welcomeCard}>
+                <div className="max-w-2xl">
+                    <h2 className="text-3xl font-bold mb-3">Olá, {dadosPerfil.nome}! ✨</h2>
+                    <p 
+                        className="text-purple-100 dark:text-slate-300 text-lg leading-relaxed"
+                        dangerouslySetInnerHTML={{ __html: dadosPerfil.mensagemWelcome }}
+                    />
                 </div>
             </div>
 
-            {/* Formulário Principal de Dados */}
-            <form onSubmit={handleSave} className="space-y-6">
-                
-                {/* CARD 1: DADOS CADASTRAIS */}
-                <div className={`p-6 rounded-2xl space-y-6 transition-all ${cardBgClass}`}>
-                    <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
-                        <h4 className="text-base font-bold text-slate-900 dark:text-white">Dados Cadastrais</h4>
-                        <p className="text-xs text-slate-400 dark:text-slate-500">Informações civis necessárias para emissão de receitas e notas fiscais de fórmulas.</p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {personalFields.map(field => (
-                            <div key={field.name} className="space-y-1.5">
-                                <label className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase flex items-center gap-1">
-                                    {field.icon} {field.label}
-                                </label>
-                                <input 
-                                    type={field.type} 
-                                    name={field.name}
-                                    value={profile[field.name] || ''} 
-                                    onChange={handleChange}
-                                    required={field.required}
-                                    className={inputClass} 
-                                />
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* CARD 2: PERFIL CLÍNICO */}
-                <div className={`p-6 rounded-2xl space-y-6 transition-all ${cardBgClass}`}>
-                    <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
-                        <h4 className="text-base font-bold text-slate-900 dark:text-white">Perfil Fisiológico & Alergias</h4>
-                        <p className="text-xs text-slate-400 dark:text-slate-500">
-                            Esses dados auxiliam os laboratórios parceiros a validar dosagens e evitar substâncias ou corantes perigosos.
-                        </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-1.5">
-                            <label className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase flex items-center gap-1">
-                                <Scale size={12} /> Peso Atual (kg)
-                            </label>
-                            <input 
-                                type="number" 
-                                name="peso"
-                                value={profile.peso || ''} 
-                                onChange={handleChange}
-                                placeholder="Ex: 65" 
-                                className={inputClass} 
-                            />
-                        </div>
-
-                        <div className="space-y-1.5">
-                            <label className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase flex items-center gap-1">
-                                <Ruler size={12} /> Altura (m)
-                            </label>
-                            <input 
-                                type="text" 
-                                name="altura"
-                                value={profile.altura || ''} 
-                                onChange={handleChange}
-                                placeholder="Ex: 1.70" 
-                                className={inputClass} 
-                            />
-                        </div>
-
-                        <div className="space-y-1.5 md:col-span-2">
-                            <label className="text-xs font-bold uppercase flex items-center gap-1 text-rose-500 dark:text-rose-400">
-                                <ShieldAlert size={12} /> Alergias Clínicas ou Restrições a Ativos
-                            </label>
-                            <textarea 
-                                name="alergias"
-                                value={profile.alergias || ''} 
-                                onChange={handleChange}
-                                rows={3}
-                                className={`${inputClass} resize-none py-3`} 
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                {/* Feedback e Botão de Salvar */}
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl bg-slate-50/50 dark:bg-slate-900/30 border border-slate-100 dark:border-slate-800/40">
-                    <div className="min-h-[24px]">
-                        {showSuccess && (
-                            <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 text-xs font-bold animate-pulse">
-                                <CheckCircle2 size={16} /> Alterações salvas com sucesso no seu prontuário Aroê!
-                            </div>
-                        )}
-                    </div>
-
-                    <button 
-                        type="submit"
-                        disabled={isSaving}
-                        className={`flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all w-full sm:w-auto ${
-                            highContrast ? 'bg-black text-white' : 'bg-purple-600 hover:bg-purple-700 text-white shadow-sm'
-                        } disabled:opacity-70`}
-                    >
-                        {isSaving ? (
-                            <><Loader2 size={16} className="animate-spin" /> Salvando...</>
-                        ) : (
-                            <><Save size={16} /> Salvar alterações</>
-                        )}
-                    </button>
-                </div>
-            </form>
-
-            {/* CARD 3: SEGURANÇA */}
-            <form onSubmit={handlePasswordSubmit} className={`p-6 rounded-2xl space-y-4 transition-all ${cardBgClass}`}>
-                <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
-                    <h4 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                        <Lock size={16} className="text-purple-500" /> Segurança da Conta
+            {/* Resultado do OCR / Aria Intelligent Reading */}
+            {ocrResult && (
+                <div className="p-6 bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-900 rounded-3xl space-y-3 animate-fade-in">
+                    <h4 className="font-bold text-purple-900 dark:text-purple-300 text-sm flex items-center gap-2">
+                        ✨ Aria identificou os seguintes componentes na receita de {dadosPerfil.nome}:
                     </h4>
-                    <p className="text-xs text-slate-400 dark:text-slate-500">Atualize suas credenciais de autenticação local</p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="space-y-1.5">
-                        <label className="text-xs font-semibold text-slate-400 dark:text-slate-500">Senha Atual</label>
-                        <input type="password" placeholder="••••••••" value={passwordData.atual} onChange={(e) => setPasswordData({...passwordData, atual: e.target.value})} className={inputClass} required />
-                    </div>
-                    <div className="space-y-1.5">
-                        <label className="text-xs font-semibold text-slate-400 dark:text-slate-500">Nova Senha</label>
-                        <input type="password" placeholder="Mín. 6 caracteres" value={passwordData.nova} onChange={(e) => setPasswordData({...passwordData, nova: e.target.value})} className={inputClass} required minLength={6} />
-                    </div>
-                    <div className="space-y-1.5">
-                        <label className="text-xs font-semibold text-slate-400 dark:text-slate-500">Confirmar Nova Senha</label>
-                        <input type="password" placeholder="Confirme a senha" value={passwordData.confirmar} onChange={(e) => setPasswordData({...passwordData, confirmar: e.target.value})} className={inputClass} required />
+                    <p className="text-xs bg-white dark:bg-slate-900 p-4 rounded-xl border whitespace-pre-line text-slate-700 dark:text-slate-300">
+                        {ocrResult}
+                    </p>
+                    <div className="flex gap-2">
+                        <button onClick={() => alert('Orçamento Gerado com Sucesso!')} className="px-4 py-2 bg-purple-600 text-white rounded-xl text-xs font-bold hover:bg-purple-700">
+                            Confirmar e Cotar Orçamento
+                        </button>
+                        <button onClick={() => setOcrResult(null)} className="px-4 py-2 bg-slate-200 text-slate-700 rounded-xl text-xs font-bold dark:bg-slate-800 dark:text-slate-300">
+                            Descartar
+                        </button>
                     </div>
                 </div>
+            )}
 
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
-                    <div className="min-h-[20px]">
-                        {showPasswordSuccess && (
-                            <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 text-xs font-bold">
-                                <CheckCircle2 size={14} /> Senha updated com sucesso!
-                            </div>
-                        )}
-                    </div>
-                    
-                    <button
-                        type="submit"
-                        disabled={isChangingPassword || !passwordData.nova}
-                        className="px-4 py-2 rounded-xl text-xs font-bold border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50 w-full sm:w-auto text-center"
-                    >
-                        {isChangingPassword ? 'Atualizando...' : 'Atualizar Senha'}
+            {/* Seção de Acompanhamento de Pedidos */}
+            <section className="space-y-6">
+                <div className="flex items-center justify-between px-2">
+                    <h3 className={`text-xl font-bold ${styles.textPrimary}`}>Acompanhamento de Pedido</h3>
+                    <button className="text-sm font-semibold text-purple-600 dark:text-purple-400 hover:underline flex items-center gap-1">
+                        Ver histórico <ChevronRight size={16} />
                     </button>
                 </div>
-            </form>
+
+                {dadosPerfil.orders.map((order) => (
+                    <div key={order.id} className={`rounded-3xl p-8 transition-all ${styles.card}`}>
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+                            <div className="flex items-center gap-5">
+                                <div className="w-14 h-14 bg-purple-50 dark:bg-purple-900/20 rounded-2xl flex items-center justify-center">
+                                    <Package className="text-purple-600 dark:text-purple-400" size={28} />
+                                </div>
+                                <div>
+                                    <h3 className="text-2xl font-bold tracking-tight">{order.productName}</h3>
+                                    <p className={styles.textSecondary}>{order.formula}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <span className="px-5 py-2 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 rounded-full text-xs font-bold uppercase tracking-wider">
+                                    {order.status === 'Recebido' ? 'Processando' : 'Em Produção'}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Linha do tempo dinâmica */}
+                        <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-12">
+                            <div className="absolute hidden md:block top-6 left-0 right-0 h-0.5 bg-slate-100 dark:bg-slate-800 -z-10" />
+                            {[
+                                { label: 'Recebido', date: order.statusDate, icon: CheckCircle, active: order.stepAtivo >= 1 },
+                                { label: 'Produção', date: order.nextDate, icon: Activity, active: order.stepAtivo >= 2 },
+                                { label: 'Enviado', date: 'Previsão Prox. Dias', icon: Truck, active: order.stepAtivo >= 3 },
+                                { label: 'Entrega', date: 'Previsão Prox. Dias', icon: Box, active: order.stepAtivo >= 4 }
+                            ].map((step, idx) => {
+                                let stepStyle = styles.statusInactive
+                                if (step.active && idx + 1 === order.stepAtivo) {
+                                    stepStyle = styles.statusNext 
+                                } else if (step.active) {
+                                    stepStyle = styles.statusActive 
+                                }
+
+                                const StepIcon = step.icon
+
+                                return (
+                                    <div key={idx} className="flex md:flex-col items-center gap-4 md:gap-3 w-full">
+                                        <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${stepStyle}`}>
+                                            <StepIcon size={22} />
+                                        </div>
+                                        <div className="text-left md:text-center">
+                                            <p className={`text-sm font-bold ${styles.textPrimary}`}>{step.label}</p>
+                                            <p className="text-xs text-slate-400">{step.date}</p>
+                                        </div>
+                                    </div>
+                                )
+                            })}
+                        </div>
+
+                        {/* Painel inferior de Ações e Valores */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-8 border-t border-slate-100 dark:border-slate-800">
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-2">
+                                    <Heart size={18} className="text-rose-500" />
+                                    <h4 className="font-bold text-sm">Autocuidado</h4>
+                                </div>
+                                <button 
+                                    onClick={() => fileInputRef.current?.click()}
+                                    disabled={isProcessing}
+                                    className="w-full py-3 bg-slate-900 dark:bg-white dark:text-black text-white rounded-xl font-bold text-sm hover:opacity-90 transition-all flex items-center justify-center gap-2"
+                                >
+                                    {isProcessing ? (
+                                        <>
+                                            <Loader2 size={16} className="animate-spin text-purple-500" />
+                                            Aria lendo receita...
+                                        </>
+                                    ) : 'Nova Receita'}
+                                </button>
+                            </div>
+
+                            <div className="space-y-1">
+                                <h4 className={styles.textSecondary + " text-sm font-medium"}>Melhor cotação obtida</h4>
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-3xl font-black text-emerald-600 dark:text-emerald-400">{order.price}</span>
+                                    <span className="text-xs text-slate-400 font-medium">/ total</span>
+                                </div>
+                                <p className="text-xs text-slate-400">{order.pharmacies} farmácias homologadas</p>
+                            </div>
+
+                            <div className="bg-slate-50 dark:bg-slate-800/40 rounded-2xl p-4 flex items-center justify-between border border-dashed border-slate-200 dark:border-slate-700">
+                                <div>
+                                    <p className="text-[10px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-widest mb-1">Destaque</p>
+                                    <p className="text-sm font-bold">{order.farmaciaDestaque}</p>
+                                </div>
+                                <button className="p-2 bg-white dark:bg-slate-800 rounded-lg shadow-sm">
+                                    <ChevronRight size={18} className="text-slate-400" />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+
+                {/* State vazio se o perfil selecionado não tiver pedidos ativos (Ex: Ricardo) */}
+                {dadosPerfil.orders.length === 0 && (
+                    <div className="text-center py-12 bg-slate-50 dark:bg-slate-900/40 border border-dashed rounded-3xl p-6">
+                        <Package size={40} className="mx-auto text-slate-300 dark:text-slate-700 mb-3" />
+                        <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300">Nenhum pedido ativo para {dadosPerfil.nome}</h4>
+                        <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">Envie uma nova receita no botão abaixo para iniciar uma cotação em tempo real com as farmácias parceiras.</p>
+                        <button 
+                            onClick={() => fileInputRef.current?.click()}
+                            className="mt-4 px-4 py-2 bg-purple-600 text-white rounded-xl text-xs font-bold hover:bg-purple-700 transition-all"
+                        >
+                            Digitalizar Nova Receita
+                        </button>
+                    </div>
+                )}
+            </section>
         </div>
     )
 }
