@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { 
     FileText, 
     Box, 
@@ -8,87 +8,80 @@ import {
     ChevronDown, 
     ChevronRight, 
     Calendar, 
-    Filter, 
-    CheckCircle 
+    Heart
 } from 'lucide-react'
 import { useThemeContext } from '../../../contexts/ThemeContext'
 
-const HISTORICO_MAIO = [
-    {
-        id: 1,
-        titulo: 'Receita enviada',
-        descricao: 'Sua receita "Magnésio Quelato + B6" foi enviada para as farmácias',
-        data: '28/05/2025',
-        hora: '14:30',
-        icon: FileText,
-        iconBg: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400'
-    },
-    {
-        id: 2,
-        titulo: 'Pedido entregue',
-        descricao: 'Sua receita "Magnésio Quelato + B6" foi enviada para as farmácias',
-        data: '28/05/2025',
-        hora: '14:30',
-        icon: Box,
-        iconBg: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400'
-    },
-    {
-        id: 3,
-        titulo: 'Tratamento atualizado',
-        descricao: 'Progresso do tratamento "Enzimas Digestivas" atualizado',
-        data: '28/05/2025',
-        hora: '14:30',
-        icon: Leaf,
-        iconBg: 'bg-teal-50 text-teal-600 dark:bg-teal-950/40 dark:text-teal-400'
-    },
-    {
-        id: 4,
-        titulo: 'Lembrete criado',
-        descricao: 'Você criou um lembrete para "Vitaminas D" às 08:00',
-        data: '28/05/2025',
-        hora: '14:30',
-        icon: Bell,
-        iconBg: 'bg-coral-50 text-orange-500 dark:bg-orange-950/40 dark:text-orange-400'
-    },
-    {
-        id: 5,
-        titulo: 'Orçamento recebido',
-        descricao: '3 novas farmácias enviaram orçamentos para seu pedido #1234',
-        data: '28/05/2025',
-        hora: '14:30',
-        icon: Tag,
-        iconBg: 'bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400'
-    }
-]
+const DEMO_STORAGE_KEY = '@Aroe:demo_session'
 
-const HISTORICO_ABRIL = [
-    {
-        id: 6,
-        titulo: 'Receita enviada',
-        descricao: 'Sua receita "Magnésio Quelato + B6" foi enviada para as farmácias',
-        data: '28/05/2025',
-        hora: '14:30',
-        icon: FileText,
-        iconBg: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400'
+// Base de dados com Amanda como perfil padrão
+const DADOS_HISTORICO_POR_PERFIL = {
+    amanda: {
+        resumo: { pedidos: 5, receitas: 3, concluidos: 2, cumprimento: '95%' },
+        economia: '215,30',
+        maio: [
+            { id: 401, categoria: 'pedidos', titulo: 'Pedido em transporte', descricao: 'Seu pedido de dermocosméticos está a caminho', data: '27/05/2025', hora: '09:30', icon: Box, iconBg: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400' },
+            { id: 402, categoria: 'tratamentos', titulo: 'Início de ciclo', descricao: 'Novo ciclo de suplementação capilar iniciado', data: '22/05/2025', hora: '08:00', icon: Leaf, iconBg: 'bg-teal-50 text-teal-600 dark:bg-teal-950/40 dark:text-teal-400' }
+        ],
+        abril: [
+            { id: 403, categoria: 'orçamentos', titulo: 'Orçamento aceito', descricao: 'Orçamento de manipulados aprovado com sucesso', data: '15/04/2025', hora: '14:20', icon: Tag, iconBg: 'bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400' }
+        ]
     },
-    {
-        id: 7,
-        titulo: 'Pedido realizado',
-        descricao: 'Seu pedido #12220 foi realizado com sucesso',
-        data: '28/05/2025',
-        hora: '14:30',
-        icon: Box,
-        iconBg: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400'
+    irene: {
+        resumo: { pedidos: 4, receitas: 5, concluidos: 1, cumprimento: '98%' },
+        economia: '184,20',
+        maio: [
+            { id: 201, categoria: 'pedidos', titulo: 'Pedido entregue', descricao: 'Medicamento "Anti-hipertensivo" chegou na residência de Dona Irene', data: '26/05/2025', hora: '16:20', icon: Box, iconBg: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400' },
+            { id: 202, categoria: 'lembretes', titulo: 'Lembrete cumprido', descricao: 'Dona Irene confirmou a tomada de "Cálcio + Vitamina M"', data: '24/05/2025', hora: '12:05', icon: Bell, iconBg: 'bg-orange-50 text-orange-500 dark:bg-orange-950/40 dark:text-orange-400' },
+            { id: 203, categoria: 'orçamentos', titulo: 'Orçamento aprovado', descricao: 'Manipulação de Probióticos autorizada na melhor oferta de orçamento', data: '18/05/2025', hora: '11:00', icon: Tag, iconBg: 'bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400' }
+        ],
+        abril: [
+            { id: 204, categoria: 'tratamentos', titulo: 'Tratamento Iniciado', descricao: 'Cardiologista incluiu o plano protetivo coronário', data: '05/04/2025', hora: '08:30', icon: Heart, iconBg: 'bg-rose-50 text-rose-500 dark:bg-rose-950/40 dark:text-rose-400' }
+        ]
+    },
+    ricardo: {
+        resumo: { pedidos: 2, receitas: 2, concluidos: 2, cumprimento: '85%' },
+        economia: '67,90',
+        maio: [
+            { id: 301, categoria: 'lembretes', titulo: 'Lembrete ignorado', descricao: 'O app registrou um atraso no "Suplemento Sinergia" de Ricardo', data: '27/05/2025', hora: '06:45', icon: Bell, iconBg: 'bg-orange-50 text-orange-500 dark:bg-orange-950/40 dark:text-orange-400' },
+            { id: 302, categoria: 'tratamentos', titulo: 'Tratamento Concluído', descricao: 'Ciclo de 30 dias de Melatonina Gota finalizado', data: '22/05/2025', hora: '23:00', icon: Leaf, iconBg: 'bg-teal-50 text-teal-600 dark:bg-teal-950/40 dark:text-teal-400' }
+        ],
+        abril: [
+            { id: 303, categoria: 'pedidos', titulo: 'Pedido realizado', descricao: 'Pedido de Nutracêuticos Esportivos faturado', data: '29/04/2025', hora: '19:12', icon: Box, iconBg: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400' }
+        ]
     }
-]
+}
 
 export default function DashboardHistorico() {
     const { highContrast } = useThemeContext()
+    const [perfilAtivo, setPerfilAtivo] = useState('amanda') // Default para Amanda
     const [activeTab, setActiveTab] = useState('todos')
 
-    // Estilizações de Alto Contraste dinâmicas
+    useEffect(() => {
+        const demoDataRaw = localStorage.getItem(DEMO_STORAGE_KEY)
+        
+        if (demoDataRaw) {
+            const session = JSON.parse(demoDataRaw)
+            const nomeUsuario = session.user?.nome || ''
+
+            if (nomeUsuario.includes('Irene')) {
+                setPerfilAtivo('irene')
+            } else if (nomeUsuario.includes('Ricardo')) {
+                setPerfilAtivo('ricardo')
+            } else {
+                setPerfilAtivo('amanda') // Fallback
+            }
+        }
+    }, [])
+
+    // ... restante do componente permanece igual
+    useEffect(() => {
+        setActiveTab('todos')
+    }, [perfilAtivo])
+
+    // Estilizações e renderização (mantidas conforme estrutura anterior)
     const cardBgClass = highContrast
-        ? 'bg-white text-black border-2 border-black dark:bg-black dark:text-white dark:border-white'
+        ? 'bg-white text-black border-2 border-black dark:bg-black dark:text-white dark:border-white p-5 space-y-4 rounded-2xl'
         : 'bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/60 shadow-sm rounded-2xl p-5 space-y-4'
 
     const filterButtonClass = highContrast
@@ -98,6 +91,16 @@ export default function DashboardHistorico() {
     const timelineItemClass = highContrast
         ? 'border-b-2 border-black dark:border-white text-black dark:text-white'
         : 'border-b border-slate-50 dark:border-slate-900/60 hover:bg-slate-50/40 dark:hover:bg-slate-900/20'
+
+    const dadosAtuais = DADOS_HISTORICO_POR_PERFIL[perfilAtivo]
+
+    const filtrarPorAba = (lista) => {
+        if (activeTab === 'todos') return lista
+        return lista.filter(item => item.categoria === activeTab)
+    }
+
+    const historicoMaioFiltrado = filtrarPorAba(dadosAtuais.maio)
+    const historicoAbrilFiltrado = filtrarPorAba(dadosAtuais.abril)
 
     return (
         <div className="space-y-6">
@@ -113,7 +116,7 @@ export default function DashboardHistorico() {
                 {/* COLUNA ESQUERDA: Filtros e Linha do Tempo */}
                 <div className="lg:col-span-2 space-y-5">
                     
-                    {/* Abas Superiores de Categoria baseadas no design */}
+                    {/* Abas Superiores de Categoria */}
                     <div className="flex items-center gap-5 border-b border-slate-100 dark:border-slate-800/60 overflow-x-auto scroller-hidden pb-1">
                         {['todos', 'pedidos', 'tratamentos', 'lembretes', 'orçamentos'].map((tab) => (
                             <button
@@ -131,7 +134,7 @@ export default function DashboardHistorico() {
                         ))}
                     </div>
 
-                    {/* Botões de Filtro Suspensos (Dropdowns do Topo) */}
+                    {/* Botões de Filtro Suspensos */}
                     <div className="flex flex-wrap items-center gap-3 pt-1">
                         <button className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${filterButtonClass}`}>
                             <Calendar size={14} className="text-slate-400" />
@@ -154,7 +157,7 @@ export default function DashboardHistorico() {
                     <div className="space-y-3 pt-3">
                         <h3 className="text-sm font-bold text-slate-900 dark:text-white px-1">Maio de 2025</h3>
                         <div className="space-y-0.5">
-                            {HISTORICO_MAIO.map((item) => {
+                            {historicoMaioFiltrado.map((item) => {
                                 const IconComponent = item.icon
                                 return (
                                     <div key={item.id} className={`flex items-center justify-between p-3 gap-4 cursor-pointer group ${timelineItemClass}`}>
@@ -179,9 +182,11 @@ export default function DashboardHistorico() {
                                     </div>
                                 )
                             })}
+                            {historicoMaioFiltrado.length === 0 && (
+                                <p className="text-[11px] text-slate-400 dark:text-slate-500 text-center py-4">Nenhuma atividade nesta categoria para este mês.</p>
+                            )}
                         </div>
 
-                        {/* Botão Ver Mais Centralizado conforme Mockup */}
                         <div className="flex justify-center pt-2">
                             <button className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${filterButtonClass}`}>
                                 <span>Ver mais</span>
@@ -194,7 +199,7 @@ export default function DashboardHistorico() {
                     <div className="space-y-3 pt-2">
                         <h3 className="text-sm font-bold text-slate-900 dark:text-white px-1">Abril de 2025</h3>
                         <div className="space-y-0.5">
-                            {HISTORICO_ABRIL.map((item) => {
+                            {historicoAbrilFiltrado.map((item) => {
                                 const IconComponent = item.icon
                                 return (
                                     <div key={item.id} className={`flex items-center justify-between p-3 gap-4 cursor-pointer group ${timelineItemClass}`}>
@@ -219,12 +224,15 @@ export default function DashboardHistorico() {
                                     </div>
                                 )
                             })}
+                            {historicoAbrilFiltrado.length === 0 && (
+                                <p className="text-[11px] text-slate-400 dark:text-slate-500 text-center py-4">Nenhuma atividade nesta categoria para este mês.</p>
+                            )}
                         </div>
                     </div>
 
                 </div>
 
-                {/* COLUNA DIREITA: Indicadores Globais e Widgets */}
+                {/* COLUNA DIREITA: Indicadores Globais Dinâmicos baseados no perfil */}
                 <div className="space-y-5 lg:sticky lg:top-24">
                     
                     {/* Widget 1: Resumo do Período */}
@@ -237,19 +245,19 @@ export default function DashboardHistorico() {
                         <div className="space-y-2.5 pt-1 text-xs">
                             <div className="flex justify-between items-center">
                                 <span className="text-slate-500 dark:text-slate-400 font-medium">Pedidos realizados</span>
-                                <span className="font-bold text-slate-800 dark:text-slate-200">8</span>
+                                <span className="font-bold text-slate-800 dark:text-slate-200">{dadosAtuais.resumo.pedidos}</span>
                             </div>
                             <div className="flex justify-between items-center">
                                 <span className="text-slate-500 dark:text-slate-400 font-medium">Receitas enviadas</span>
-                                <span className="font-bold text-slate-800 dark:text-slate-200">6</span>
+                                <span className="font-bold text-slate-800 dark:text-slate-200">{dadosAtuais.resumo.receitas}</span>
                             </div>
                             <div className="flex justify-between items-center">
                                 <span className="text-slate-500 dark:text-slate-400 font-medium">Tratamentos concluídos</span>
-                                <span className="font-bold text-slate-800 dark:text-slate-200">3</span>
+                                <span className="font-bold text-slate-800 dark:text-slate-200">{dadosAtuais.resumo.concluidos}</span>
                             </div>
                             <div className="flex justify-between items-center border-t border-slate-50 dark:border-slate-800/80 pt-2.5">
                                 <span className="text-slate-500 dark:text-slate-400 font-medium">Lembretes cumpridos</span>
-                                <span className="font-bold text-emerald-600 dark:text-emerald-400">92%</span>
+                                <span className="font-bold text-emerald-600 dark:text-emerald-400">{dadosAtuais.resumo.cumprimento}</span>
                             </div>
                         </div>
                     </div>
@@ -263,7 +271,9 @@ export default function DashboardHistorico() {
 
                         <div className="py-2 flex items-baseline gap-1">
                             <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">R$</span>
-                            <span className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">312,45</span>
+                            <span className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+                                {dadosAtuais.economia}
+                            </span>
                         </div>
 
                         <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium leading-normal">
