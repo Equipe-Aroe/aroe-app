@@ -11,50 +11,26 @@ import {
     Heart
 } from 'lucide-react'
 import { useThemeContext } from '../../../contexts/ThemeContext'
+import { personasPayloads } from '../../../data/personasData'
 
 const DEMO_STORAGE_KEY = '@Aroe:demo_session'
 
-// Base de dados com Amanda como perfil padrão
-const DADOS_HISTORICO_POR_PERFIL = {
-    amanda: {
-        resumo: { pedidos: 5, receitas: 3, concluidos: 2, cumprimento: '95%' },
-        economia: '215,30',
-        maio: [
-            { id: 401, categoria: 'pedidos', titulo: 'Pedido em transporte', descricao: 'Seu pedido de dermocosméticos está a caminho', data: '27/05/2025', hora: '09:30', icon: Box, iconBg: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400' },
-            { id: 402, categoria: 'tratamentos', titulo: 'Início de ciclo', descricao: 'Novo ciclo de suplementação capilar iniciado', data: '22/05/2025', hora: '08:00', icon: Leaf, iconBg: 'bg-teal-50 text-teal-600 dark:bg-teal-950/40 dark:text-teal-400' }
-        ],
-        abril: [
-            { id: 403, categoria: 'orçamentos', titulo: 'Orçamento aceito', descricao: 'Orçamento de manipulados aprovado com sucesso', data: '15/04/2025', hora: '14:20', icon: Tag, iconBg: 'bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400' }
-        ]
-    },
-    irene: {
-        resumo: { pedidos: 4, receitas: 5, concluidos: 1, cumprimento: '98%' },
-        economia: '184,20',
-        maio: [
-            { id: 201, categoria: 'pedidos', titulo: 'Pedido entregue', descricao: 'Medicamento "Anti-hipertensivo" chegou na residência de Dona Irene', data: '26/05/2025', hora: '16:20', icon: Box, iconBg: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400' },
-            { id: 202, categoria: 'lembretes', titulo: 'Lembrete cumprido', descricao: 'Dona Irene confirmou a tomada de "Cálcio + Vitamina M"', data: '24/05/2025', hora: '12:05', icon: Bell, iconBg: 'bg-orange-50 text-orange-500 dark:bg-orange-950/40 dark:text-orange-400' },
-            { id: 203, categoria: 'orçamentos', titulo: 'Orçamento aprovado', descricao: 'Manipulação de Probióticos autorizada na melhor oferta de orçamento', data: '18/05/2025', hora: '11:00', icon: Tag, iconBg: 'bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400' }
-        ],
-        abril: [
-            { id: 204, categoria: 'tratamentos', titulo: 'Tratamento Iniciado', descricao: 'Cardiologista incluiu o plano protetivo coronário', data: '05/04/2025', hora: '08:30', icon: Heart, iconBg: 'bg-rose-50 text-rose-500 dark:bg-rose-950/40 dark:text-rose-400' }
-        ]
-    },
-    ricardo: {
-        resumo: { pedidos: 2, receitas: 2, concluidos: 2, cumprimento: '85%' },
-        economia: '67,90',
-        maio: [
-            { id: 301, categoria: 'lembretes', titulo: 'Lembrete ignorado', descricao: 'O app registrou um atraso no "Suplemento Sinergia" de Ricardo', data: '27/05/2025', hora: '06:45', icon: Bell, iconBg: 'bg-orange-50 text-orange-500 dark:bg-orange-950/40 dark:text-orange-400' },
-            { id: 302, categoria: 'tratamentos', titulo: 'Tratamento Concluído', descricao: 'Ciclo de 30 dias de Melatonina Gota finalizado', data: '22/05/2025', hora: '23:00', icon: Leaf, iconBg: 'bg-teal-50 text-teal-600 dark:bg-teal-950/40 dark:text-teal-400' }
-        ],
-        abril: [
-            { id: 303, categoria: 'pedidos', titulo: 'Pedido realizado', descricao: 'Pedido de Nutracêuticos Esportivos faturado', data: '29/04/2025', hora: '19:12', icon: Box, iconBg: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400' }
-        ]
+const getIconComponent = (type) => {
+    const mapping = {
+        box: Box,
+        leaf: Leaf,
+        bell: Bell,
+        tag: Tag,
+        heart: Heart,
+        fileText: FileText,
+        calendar: Calendar,
     }
+    return mapping[type] || Box
 }
 
 export default function DashboardHistorico() {
     const { highContrast } = useThemeContext()
-    const [perfilAtivo, setPerfilAtivo] = useState('amanda') // Default para Amanda
+    const [perfilAtivo, setPerfilAtivo] = useState('amanda')
     const [activeTab, setActiveTab] = useState('todos')
 
     useEffect(() => {
@@ -68,18 +44,18 @@ export default function DashboardHistorico() {
                 setPerfilAtivo('irene')
             } else if (nomeUsuario.includes('Ricardo')) {
                 setPerfilAtivo('ricardo')
+            } else if (nomeUsuario.includes('NatuFórmula') || session.user?.tipo === 'Farmácia Parceira') {
+                setPerfilAtivo('farmacia')
             } else {
-                setPerfilAtivo('amanda') // Fallback
+                setPerfilAtivo('amanda')
             }
         }
     }, [])
 
-    // ... restante do componente permanece igual
     useEffect(() => {
         setActiveTab('todos')
     }, [perfilAtivo])
 
-    // Estilizações e renderização (mantidas conforme estrutura anterior)
     const cardBgClass = highContrast
         ? 'bg-white text-black border-2 border-black dark:bg-black dark:text-white dark:border-white p-5 space-y-4 rounded-2xl'
         : 'bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/60 shadow-sm rounded-2xl p-5 space-y-4'
@@ -92,15 +68,17 @@ export default function DashboardHistorico() {
         ? 'border-b-2 border-black dark:border-white text-black dark:text-white'
         : 'border-b border-slate-50 dark:border-slate-900/60 hover:bg-slate-50/40 dark:hover:bg-slate-900/20'
 
-    const dadosAtuais = DADOS_HISTORICO_POR_PERFIL[perfilAtivo]
+    // Resgate dinâmico e seguro do histórico da persona ativa
+    const dadosAtuais = personasPayloads[perfilAtivo]?.historico || personasPayloads['amanda'].historico
 
-    const filtrarPorAba = (lista) => {
+    const filtrarPorAba = (lista = []) => {
         if (activeTab === 'todos') return lista
         return lista.filter(item => item.categoria === activeTab)
     }
 
-    const historicoMaioFiltrado = filtrarPorAba(dadosAtuais.maio)
-    const historicoAbrilFiltrado = filtrarPorAba(dadosAtuais.abril)
+    // Filtros com fallback seguro (caso venha indefinido de alguma persona)
+    const historicoMaioFiltrado = filtrarPorAba(dadosAtuais?.maio || [])
+    const historicoAbrilFiltrado = filtrarPorAba(dadosAtuais?.abril || [])
 
     return (
         <div className="space-y-6">
@@ -158,7 +136,7 @@ export default function DashboardHistorico() {
                         <h3 className="text-sm font-bold text-slate-900 dark:text-white px-1">Maio de 2025</h3>
                         <div className="space-y-0.5">
                             {historicoMaioFiltrado.map((item) => {
-                                const IconComponent = item.icon
+                                const IconComponent = getIconComponent(item.iconType)
                                 return (
                                     <div key={item.id} className={`flex items-center justify-between p-3 gap-4 cursor-pointer group ${timelineItemClass}`}>
                                         <div className="flex items-center gap-4 min-w-0 flex-1">
@@ -200,7 +178,7 @@ export default function DashboardHistorico() {
                         <h3 className="text-sm font-bold text-slate-900 dark:text-white px-1">Abril de 2025</h3>
                         <div className="space-y-0.5">
                             {historicoAbrilFiltrado.map((item) => {
-                                const IconComponent = item.icon
+                                const IconComponent = getIconComponent(item.iconType)
                                 return (
                                     <div key={item.id} className={`flex items-center justify-between p-3 gap-4 cursor-pointer group ${timelineItemClass}`}>
                                         <div className="flex items-center gap-4 min-w-0 flex-1">
@@ -244,40 +222,58 @@ export default function DashboardHistorico() {
                         
                         <div className="space-y-2.5 pt-1 text-xs">
                             <div className="flex justify-between items-center">
-                                <span className="text-slate-500 dark:text-slate-400 font-medium">Pedidos realizados</span>
-                                <span className="font-bold text-slate-800 dark:text-slate-200">{dadosAtuais.resumo.pedidos}</span>
+                                <span className="text-slate-500 dark:text-slate-400 font-medium">
+                                    {perfilAtivo === 'farmacia' ? 'Pedidos faturados' : 'Pedidos realizados'}
+                                </span>
+                                <span className="font-bold text-slate-800 dark:text-slate-200">
+                                    {dadosAtuais?.resumo?.pedidos || 0}
+                                </span>
                             </div>
                             <div className="flex justify-between items-center">
-                                <span className="text-slate-500 dark:text-slate-400 font-medium">Receitas enviadas</span>
-                                <span className="font-bold text-slate-800 dark:text-slate-200">{dadosAtuais.resumo.receitas}</span>
+                                <span className="text-slate-500 dark:text-slate-400 font-medium">
+                                    {perfilAtivo === 'farmacia' ? 'Receitas recebidas' : 'Receitas enviadas'}
+                                </span>
+                                <span className="font-bold text-slate-800 dark:text-slate-200">
+                                    {dadosAtuais?.resumo?.receitas || 0}
+                                </span>
                             </div>
                             <div className="flex justify-between items-center">
-                                <span className="text-slate-500 dark:text-slate-400 font-medium">Tratamentos concluídos</span>
-                                <span className="font-bold text-slate-800 dark:text-slate-200">{dadosAtuais.resumo.concluidos}</span>
+                                <span className="text-slate-500 dark:text-slate-400 font-medium">Propostas concluídas</span>
+                                <span className="font-bold text-slate-800 dark:text-slate-200">
+                                    {dadosAtuais?.resumo?.concluidos || 0}
+                                </span>
                             </div>
                             <div className="flex justify-between items-center border-t border-slate-50 dark:border-slate-800/80 pt-2.5">
-                                <span className="text-slate-500 dark:text-slate-400 font-medium">Lembretes cumpridos</span>
-                                <span className="font-bold text-emerald-600 dark:text-emerald-400">{dadosAtuais.resumo.cumprimento}</span>
+                                <span className="text-slate-500 dark:text-slate-400 font-medium">Taxa de cumprimento</span>
+                                <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                                    {dadosAtuais?.resumo?.cumprimento || '0%'}
+                                </span>
                             </div>
                         </div>
                     </div>
 
-                    {/* Widget 2: Economia Financeira Acumulada */}
+                    {/* Widget 2: Economia Financeira Acumulada / Faturamento */}
                     <div className={cardBgClass}>
                         <div>
-                            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Economia total</h3>
-                            <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">Em pedidos entregues</p>
+                            <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                                {perfilAtivo === 'farmacia' ? 'Faturamento bruto' : 'Economia total'}
+                            </h3>
+                            <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
+                                {perfilAtivo === 'farmacia' ? 'Gerado pela plataforma' : 'Em pedidos entregues'}
+                            </p>
                         </div>
 
                         <div className="py-2 flex items-baseline gap-1">
                             <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">R$</span>
                             <span className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-                                {dadosAtuais.economia}
+                                {dadosAtuais?.economia || '0,00'}
                             </span>
                         </div>
 
                         <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium leading-normal">
-                            Em relação ao preço médio de mercado
+                            {perfilAtivo === 'farmacia' 
+                                ? 'Repassado de forma direta para sua conta' 
+                                : 'Em relação ao preço médio de mercado'}
                         </p>
                     </div>
 

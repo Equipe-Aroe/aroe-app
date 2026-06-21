@@ -9,6 +9,7 @@ import Landing from './pages/Landing/Landing'
 import Login from './pages/Login/Login'
 import Register from './pages/Login/Register'
 import Sobre from './pages/Sobre/Sobre'
+import Farmacia from './pages/Farmacia/FarmaciaSection'
 import Dashboard from './pages/Dashboard/Dashboard'
 import DashboardHome from './pages/Dashboard/sections/DashboardHome'
 import DashboardReceitas from './pages/Dashboard/sections/Receitas'
@@ -59,6 +60,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/pages/sobre" element={<Sobre />} />
+        <Route path="/pages/farmacia" element={<Farmacia />} />
 
         <Route path="/dashboard" element={<Dashboard />}>
           <Route index element={<DashboardHome />} />

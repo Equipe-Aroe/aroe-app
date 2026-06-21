@@ -1,4 +1,4 @@
-import { Crosshair, Eye, TreePine, CheckCircle2 } from "lucide-react"
+import { Crosshair, Eye, TreePine, CheckCircle2, Leaf } from "lucide-react"
 
 const valores = [
     "Agilidade",
@@ -78,23 +78,24 @@ export default function MvvSection() {
                         </div>
                     ))}
 
-                    {/* Valores */}
-                    <div className="bg-white/90 dark:bg-slate-900/40 backdrop-blur-md rounded-2xl border border-[#4DAA5C]/30 dark:border-slate-800 shadow-sm shadow-[#4DAA5C]/5 px-5 sm:px-6 lg:px-8 py-6 sm:py-8 flex flex-col sm:flex-row items-start gap-4 sm:gap-6 transition-all duration-300">
-                        <div className="shrink-0 w-12 sm:w-14 h-12 sm:h-14 rounded-xl bg-[#4DAA5C] dark:bg-[#4DAA5C]/10 dark:border dark:border-[#4DAA5C]/30 flex items-center justify-center shadow-md">
-                            <TreePine className="w-6 h-6 sm:w-7 sm:h-7 text-white dark:text-[#4DAA5C]" strokeWidth={2.5} />
-                        </div>
-                        <div className="flex flex-col gap-3 sm:gap-4 flex-1 w-full">
-                            <h3 className="text-lg sm:text-xl font-bold text-[#2A1F5E] dark:text-[#4DAA5C]">Valores</h3>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-3 sm:gap-x-6 gap-y-2.5 sm:gap-y-3">
-                                {valores.map((v) => (
-                                    <div key={v} className="flex items-center gap-2 group">
-                                        <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#4DAA5C] flex-shrink-0" />
-                                        <span className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium">{v}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
+{/* Valores */}
+<div className="bg-white/90 dark:bg-slate-900/40 backdrop-blur-md rounded-2xl border border-[#4DAA5C]/30 dark:border-slate-800 shadow-sm shadow-[#4DAA5C]/5 px-5 sm:px-6 lg:px-8 py-6 sm:py-8 flex flex-col sm:flex-row items-start gap-4 sm:gap-6 transition-all duration-300">
+    <div className="shrink-0 w-12 sm:w-14 h-12 sm:h-14 rounded-xl bg-[#4DAA5C] dark:bg-[#4DAA5C]/10 dark:border dark:border-[#4DAA5C]/30 flex items-center justify-center shadow-md">
+        <TreePine className="w-6 h-6 sm:w-7 sm:h-7 text-white dark:text-[#4DAA5C]" strokeWidth={2.5} />
+    </div>
+    <div className="flex flex-col gap-3 sm:gap-4 flex-1 w-full">
+        <h3 className="text-lg sm:text-xl font-bold text-[#2A1F5E] dark:text-[#4DAA5C]">Valores</h3>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-3 sm:gap-x-6 gap-y-2.5 sm:gap-y-3">
+            {valores.map((v) => (
+                <div key={v} className="flex items-center gap-2 group">
+                    {/* Substituído CheckCircle2 por Leaf (Ícone de folha) */}
+                    <Leaf className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-[#4DAA5C] flex-shrink-0 transition-transform group-hover:scale-110 duration-200" strokeWidth={2.5} />
+                    <span className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium">{v}</span>
+                </div>
+            ))}
+        </div>
+    </div>
+</div>
 
                 </div>
             </div>

@@ -23,6 +23,11 @@ export default function HeroSection() {
                     A tecnologia que cuida de você
                 </span>
 
+{/* Logo adicionado aqui embaixo da tag, vindo da pasta public */}
+<div className="mb-6">
+    <img src="/logo2.png" alt="Logo Aroe" className="h-32 w-auto object-contain" />
+</div>
+
                 <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight text-white mb-4">
                     Seus medicamentos<br />
                     manipulados,
@@ -35,8 +40,8 @@ export default function HeroSection() {
                 </p>
 
                 <div className="flex gap-2 sm:gap-4 flex-wrap mb-8 sm:mb-10">
-                    <Button variant="outline">Sou Farmácia</Button>
-                    <Button variant="primary">Enviar Receita</Button>
+                    <Button variant="outline" onClick={() => window.location.href = '/pages/farmacia'}>Sou Farmácia</Button>
+                    <Button variant="primary" onClick={() => window.location.href = '/pages/login'}>Entrar como Paciente</Button>
                 </div>
 
                 <div className="flex gap-6 flex-wrap">
@@ -46,7 +51,6 @@ export default function HeroSection() {
                             ✓
                         </div>
                         Envio único de receita
-
                     </div>
 
                     <div className="flex items-center gap-1.5 text-xs text-white/85">

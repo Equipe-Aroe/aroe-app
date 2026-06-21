@@ -1,12 +1,29 @@
-import { useState } from "react";
+"use client"
+
+import { useState, useRef, useEffect } from "react";
 import {
   Sparkles,
-  CheckCircle2,
   FileText,
-  ShieldCheck,
+  Upload,
+  X,
+  Camera,
+  ArrowRight,
+  CircleDollarSign,
+  Truck,
+  ShieldCheck, 
   BadgeDollarSign,
+  CheckCircle2
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import Button from '../../../components/ui/Button';
+
+// Importações do serviço unificado de OCR e Câmera
+import {
+  processarReceitaOCR,
+  iniciarCamera,
+  pararCamera,
+  capturarFotoDaCamera
+} from '../../../services/ocrService';
 
 const features = [
   {
@@ -28,12 +45,90 @@ const features = [
     number: "03",
     label: "Organizamos as melhores ofertas",
     detail:
-      "Você compara preços, prazo de entrega e avaliações em um único lugar.",
+      "Você compara preços, prazo de entrega e avaliações in um único lugar.",
   },
 ];
 
 export default function IntelligenceSection() {
   const [activeFeature, setActiveFeature] = useState(1);
+
+  // Estados para controle dos modais e fluxo da IA
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isOcrProcessing, setIsOcrProcessing] = useState(false);
+  const [dadosResultado, setDadosResultado] = useState(null);
+  const [isCameraActive, setIsCameraActive] = useState(false);
+  const [cameraStream, setCameraStream] = useState(null);
+
+  const videoRef = useRef(null);
+
+  // Fluxo: Abrir Câmera (Igual ao que funciona)
+  const handleLigarcamera = async () => {
+    try {
+      const stream = await iniciarCamera();
+      setCameraStream(stream);
+      setIsCameraActive(true);
+
+      setTimeout(() => {
+        if (videoRef.current) videoRef.current.srcObject = stream;
+      }, 100);
+    } catch (err) {
+      alert(err.message || "Não foi possível acessar a câmera.");
+    }
+  };
+
+  // Fluxo: Capturar Foto
+  const handleTirarFoto = async () => {
+    if (!videoRef.current) return;
+    try {
+      const arquivoFoto = await capturarFotoDaCamera(videoRef.current);
+      handleFecharCamera();
+      await executarProcessamentoOCR(arquivoFoto);
+    } catch (error) {
+      console.error("Erro ao capturar foto:", error);
+    }
+  };
+
+  // Handler unificado de OCR
+  const executarProcessamentoOCR = async (arquivo) => {
+    if (!arquivo) return;
+
+    setIsOcrProcessing(true);
+    setDadosResultado(null);
+
+    try {
+      const urlPreview = URL.createObjectURL(arquivo);
+      const dadosExtraidos = await processarReceitaOCR(arquivo);
+
+      setDadosResultado({
+        ...dadosExtraidos,
+        previewUrl: urlPreview
+      });
+    } catch (error) {
+      console.error("Erro no processamento da receita:", error);
+      alert(error.message || "Não foi possível ler os dados da imagem.");
+    } finally {
+      setIsOcrProcessing(false);
+    }
+  };
+
+  const handleFileChange = async (e) => {
+    const arquivoSelecionado = e.target.files?.[0];
+    if (arquivoSelecionado) {
+      await executarProcessamentoOCR(arquivoSelecionado);
+    }
+  };
+
+  const handleFecharCamera = () => {
+    pararCamera(cameraStream);
+    setCameraStream(null);
+    setIsCameraActive(false);
+  };
+
+  const handleFecharModalPrincipal = () => {
+    handleFecharCamera();
+    setDadosResultado(null);
+    setIsUploadModalOpen(false);
+  };
 
   return (
     <section
@@ -70,7 +165,6 @@ export default function IntelligenceSection() {
           lg:gap-0
         "
       >
-        {/* IMAGEM CORRIGIDA */}
         <div
           className="
             w-full
@@ -102,7 +196,7 @@ export default function IntelligenceSection() {
               justify-center
             "
           >
-            {/* Glow CORRIGIDO: Adicionado 'absolute' para não empurrar a imagem */}
+            {/* Glow */}
             <div
               className="
                 absolute
@@ -323,19 +417,17 @@ export default function IntelligenceSection() {
                         onClick={() =>
                           setActiveFeature(isActive ? null : feature.id)
                         }
-                        className={`w-full relative text-left rounded-3xl transition-all duration-300 backdrop-blur-md border overflow-hidden ${
-                          isActive
-                            ? "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-xl"
-                            : "bg-white/70 dark:bg-slate-900/70 border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 hover:-translate-y-1 hover:shadow-2xl"
-                        }`}
+                        className={`w-full relative text-left rounded-3xl transition-all duration-300 backdrop-blur-md border overflow-hidden ${isActive
+                          ? "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-xl"
+                          : "bg-white/70 dark:bg-slate-900/70 border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 hover:-translate-y-1 hover:shadow-2xl"
+                          }`}
                       >
                         <div className="flex items-center gap-4 px-6 py-5">
                           <div
-                            className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all ${
-                              isActive
-                                ? "bg-primary text-white"
-                                : "bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white"
-                            }`}
+                            className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all ${isActive
+                              ? "bg-primary text-white"
+                              : "bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white"
+                              }`}
                           >
                             {feature.number}
                           </div>
@@ -352,22 +444,20 @@ export default function IntelligenceSection() {
                               />
 
                               <span
-                                className={`font-semibold ${
-                                  isActive
-                                    ? "text-slate-900 dark:text-white"
-                                    : "text-slate-700 dark:text-slate-400"
-                                }`}
+                                className={`font-semibold ${isActive
+                                  ? "text-slate-900 dark:text-white"
+                                  : "text-slate-700 dark:text-slate-400"
+                                  }`}
                               >
                                 {feature.label}
                               </span>
                             </div>
 
                             <div
-                              className={`transition-all duration-300 overflow-hidden ${
-                                isActive
-                                  ? "max-h-40 opacity-100 mt-3"
-                                  : "max-h-0 opacity-0"
-                              }`}
+                              className={`transition-all duration-300 overflow-hidden ${isActive
+                                ? "max-h-40 opacity-100 mt-3"
+                                : "max-h-0 opacity-0"
+                                }`}
                             >
                               <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
                                 {feature.detail}
@@ -383,12 +473,157 @@ export default function IntelligenceSection() {
             </div>
 
             {/* CTA */}
-            <button className="mt-10 px-6 py-3 rounded-full bg-primary text-white font-medium hover:scale-105 transition-all shadow-lg">
-              Experimentar agora
-            </button>
+            <div className="mt-10">
+              <Button variant='primary' onClick={() => setIsUploadModalOpen(true)}>
+                <Upload size={16} className="inline mr-2" /> Testar IA da Aroê
+              </Button>
+            </div>
           </motion.div>
+
+          {/* ================= MODAIS E FLUXO OCR INTEGRADOS ================= */}
+          <AnimatePresence>
+            {isUploadModalOpen && (
+              <motion.div
+                className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md"
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              >
+                <motion.div
+                  className="relative w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl text-slate-900 dark:text-white overflow-hidden"
+                  initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}
+                >
+                  <button
+                    className="absolute top-4 right-4 z-50 p-2 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
+                    onClick={handleFecharModalPrincipal}
+                  >
+                    <X size={18} />
+                  </button>
+
+                  {/* TELA 1: PROCESSANDO LEITURA DA IA */}
+                  {isOcrProcessing && (
+                    <div className="min-h-[300px] flex flex-col items-center justify-center gap-4 text-center">
+                      <div className="relative p-4 bg-secondary/10 text-secondary rounded-2xl animate-pulse">
+                        <Sparkles size={32} className="animate-spin duration-1000" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-lg text-slate-900 dark:text-white">Nossa IA está trabalhando...</h4>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-[280px] mx-auto">
+                          Lendo compostos, identificando CRM e validando a receita digitalmente.
+                        </p>
+                      </div>
+                      <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden max-w-[200px]">
+                        <div className="bg-secondary h-full w-2/3 animate-infinite-loading rounded-full" />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* TELA 2: EXIBIÇÃO DOS RESULTADOS DA IA */}
+                  {!isOcrProcessing && dadosResultado && (
+                    <motion.div
+                      className="flex flex-col gap-5 pt-2"
+                      initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }}
+                    >
+                      <div className="inline-flex items-center gap-2 self-start text-[11px] font-bold tracking-wider px-3 py-1 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                        <Sparkles size={12} className="fill-current" />
+                        ESSA É A NOSSA IA FUNCIONANDO
+                      </div>
+
+                      <div>
+                        <h3 className="font-serif text-xl font-bold">Leitura Concluída!</h3>
+                        <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Veja abaixo os principais dados extraídos:</p>
+                      </div>
+
+                      <div className="flex flex-col gap-2 bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 max-h-[180px] overflow-y-auto">
+                        <span className="text-[10px] uppercase tracking-wider font-semibold text-slate-400 block">Texto Detectado</span>
+                        <p className="text-xs text-slate-700 dark:text-slate-300 whitespace-pre-line leading-relaxed italic font-mono">
+                          {dadosResultado.textoExtraido || "Nenhum texto legível foi identificado."}
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 text-[11px] bg-slate-50/50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
+                        <div><span className="text-slate-400">Médico:</span> <strong className="block truncate">{dadosResultado.nomeMedico || 'Não identificado'}</strong></div>
+                        <div><span className="text-slate-400">CRM:</span> <strong className="block truncate">{dadosResultado.crmMedico || 'Não identificado'}</strong></div>
+                        <div><span className="text-slate-400">Tipo:</span> <strong className="block truncate text-secondary">{dadosResultado.tipoReceita}</strong></div>
+                        <div><span className="text-slate-400">Confiança IA:</span> <strong className="block text-emerald-500">{dadosResultado.confidence?.toFixed(0) || 94}%</strong></div>
+                      </div>
+
+                      <div className="flex gap-2 mt-2 w-full">
+                        <Button
+                          variant="outlineDark"
+                          className="flex-1 text-xs py-3 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800"
+                          onClick={() => {
+                            setDadosResultado(null);
+                            setIsCameraActive(false);
+                          }}
+                        >
+                          Testar Novamente
+                        </Button>
+                        <Button
+                          variant="primary"
+                          className="flex-1 text-xs py-3"
+                          onClick={() => {
+                            console.log("Direcionando usuário para a plataforma com os dados:", dadosResultado);
+                            setIsUploadModalOpen(false);
+                          }}
+                        >
+                          Acessar Plataforma <ArrowRight size={14} />
+                        </Button>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* TELA 3: VISOR DA CÂMERA ATIVA */}
+                  {!isOcrProcessing && !dadosResultado && isCameraActive && (
+                    <div className="flex flex-col gap-4">
+                      <div className="relative aspect-[3/4] w-full rounded-2xl bg-black overflow-hidden border border-slate-700 shadow-inner">
+                        <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 border-2 border-dashed border-white/30 m-6 rounded-xl pointer-events-none flex items-center justify-center">
+                          <p className="text-[10px] text-white/70 bg-black/50 backdrop-blur-sm px-2 py-1 rounded">Enquadre a receita e segure firme</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button className="flex-1" variant="primary" onClick={handleTirarFoto}>
+                          <Camera size={16} /> Capturar Foto
+                        </Button>
+                        <Button variant="outlineDark" onClick={handleFecharCamera}>Cancelar</Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* TELA 4: SELEÇÃO INICIAL */}
+                  {!isOcrProcessing && !dadosResultado && !isCameraActive && (
+                    <div className="flex flex-col gap-3">
+                      <button
+                        onClick={handleLigarcamera}
+                        className="flex items-center gap-4 w-full p-4 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-secondary/60 dark:hover:border-secondary/60 bg-slate-50 dark:bg-slate-950/50 hover:bg-secondary/5 dark:hover:bg-secondary/5 transition text-left group"
+                      >
+                        <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 group-hover:text-secondary group-hover:bg-secondary/10 transition">
+                          <Camera size={22} />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold">Usar a câmera do celular</p>
+                          <p className="text-xs text-slate-400">Tire uma foto nítida agora mesmo</p>
+                        </div>
+                      </button>
+
+                      <label className="flex items-center gap-4 w-full p-4 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-secondary/60 dark:hover:border-secondary/60 bg-slate-50 dark:bg-slate-950/50 hover:bg-secondary/5 dark:hover:bg-secondary/5 cursor-pointer transition text-left group">
+                        <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 group-hover:text-secondary group-hover:bg-secondary/10 transition">
+                          <Upload size={22} />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">Escolher arquivo salvo</p>
+                          <p className="text-xs text-slate-400">Suporta PNG, JPG ou PDFs de até 10MB</p>
+                        </div>
+                        <input type="file" accept="image/*,.pdf" className="hidden" onChange={handleFileChange} />
+                      </label>
+                    </div>
+                  )}
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </section>
   );
 }
+

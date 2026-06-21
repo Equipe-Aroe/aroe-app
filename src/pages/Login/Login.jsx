@@ -1,164 +1,70 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import {
-  Sparkles,
-  User,
-  Building2,
-  X,
-  Moon,
-  Sun,
-  Accessibility,
-} from "lucide-react";
+import { Eye, EyeOff, Sparkles, User, Building2, X, Moon, Sun, Accessibility } from "lucide-react";
 import AuthLayout from "./AuthLayout";
 import Button from "../../components/ui/Button";
 import { useThemeContext } from "../../contexts/ThemeContext";
 import AccessibilityToolbar from "../../components/layout/AccessibilityToolbar";
+import { personasPayloads } from "../../data/personasData";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false); // Colocado no lugar correto!
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
   const navigate = useNavigate();
   const { darkMode, toggleDarkMode } = useThemeContext();
 
-  // Base de dados injetada dinamicamente na Demo de acordo com o roteiro de vocês
   const personas = [
     {
       id: "ricardo",
       nome: "Ricardo Augusto",
       tag: "Trabalhador / Hipertenso",
-      descricao:
-        "34 anos, rotina exaustiva. Precisa cotar fórmulas de uso contínuo para hipertensão e vitaminas sem perder tempo.",
+      descricao: "34 anos, rotina exaustiva. Precisa cotar fórmulas de uso contínuo para hipertensão e vitaminas sem perder tempo.",
       cor: "border-blue-200 dark:border-blue-900 bg-blue-50/40 dark:bg-blue-950/10",
       icone: <User className="text-blue-600 dark:text-blue-400" size={20} />,
-      // Dados que serão injetados no Dashboard
-      payload: {
-        user: { nome: "Ricardo Augusto", tipo: "Paciente" },
-        receitasIniciais: [
-          {
-            id: 101,
-            nome: "Anti-hipertensivo + Complexo Vitamínico",
-            tipo: "Uso Contínuo",
-            dataEnvio: new Date().toLocaleDateString("pt-BR"),
-            pedidoId: "#AROE-8831",
-            status: "Aguardando orçamento",
-            statusCor:
-              "bg-orange-100 text-orange-700 dark:bg-orange-950/40 dark:text-orange-400",
-            entregaInfo: "Validade: 180 dias",
-            textoExtraido:
-              "Dr. Carlos Eduardo - Cardiologista\nCRM: 456789/SP\n\nPaciente: Ricardo Augusto\n\nUso Contínuo:\n1. Losartana Potássica 50mg\n2. Anlodipino 5mg\n3. Vitamina D 2.000 UI\n4. Vitamina B12 500mcg\nMandar qsp 60 cápsulas.",
-            confidence: 94,
-            imagemUrl:
-              "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=500&auto=format&fit=crop&q=60", // Mock de receita médica
-            dadosEstruturados: {
-              paciente: "Ricardo Augusto",
-              nomeMedico: "Dr. Carlos Eduardo",
-              crmMedico: "456789/SP",
-              cnpjFarmacia: "12.345.678/0001-99",
-              dataEmissao: new Date().toLocaleDateString("pt-BR"),
-              validadeDias: "180",
-              tipoReceita: "Uso Contínuo",
-            },
-          },
-        ],
-      },
     },
     {
       id: "irene",
       nome: "Dona Irene (e Fred)",
       tag: "Idosa / Sem Afinidade Tecnológica",
-      descricao:
-        "68 anos, aposentada. Trata osteoporose e precisa dos biscoitos medicamentosos do seu cão cardiopata, o Fred.",
+      descricao: "68 anos, aposentada. Trata osteoporose e precisa dos biscoitos medicamentosos do seu cão cardiopata, o Fred.",
       cor: "border-amber-200 dark:border-amber-900 bg-amber-50/40 dark:bg-amber-950/10",
       icone: <User className="text-amber-600 dark:text-amber-400" size={20} />,
-      payload: {
-        user: { nome: "Dona Irene", tipo: "Paciente (WhatsApp)" },
-        receitasIniciais: [
-          {
-            id: 201,
-            nome: "Manipulado Veterinário (Fred)",
-            tipo: "Uso Veterinário",
-            dataEnvio: new Date().toLocaleDateString("pt-BR"),
-            pedidoId: "#AROE-4421",
-            status: "Aguardando orçamento",
-            statusCor:
-              "bg-orange-100 text-orange-700 dark:bg-orange-950/40 dark:text-orange-400",
-            entregaInfo: "Validade: 30 dias",
-            textoExtraido:
-              "Dra. Amanda Silva - Medicina Veterinária\nCRMV: 9912-SP\n\nPaciente Canino: Fred (Prop. Irene)\n\nUso Oral:\n1. Pimobendan 2,5mg em formato de biscoito palatável flavorizado sabor carne.\nEnviar 30 biscoitos.",
-            confidence: 88,
-            imagemUrl:
-              "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=500&auto=format&fit=crop&q=60", // Mock dog para ilustrar o Fred
-            dadosEstruturados: {
-              paciente: "Fred (Cachorro da Dona Irene)",
-              nomeMedico: "Dra. Amanda Silva (CRMV)",
-              crmMedico: "9912/SP",
-              cnpjFarmacia: "99.888.777/0001-11",
-              dataEmissao: new Date().toLocaleDateString("pt-BR"),
-              validadeDias: "30",
-              tipoReceita: "Uso Veterinário",
-            },
-          },
-          {
-            id: 202,
-            nome: "Cálcio + Fixador de Osteoporose",
-            tipo: "Uso Contínuo",
-            dataEnvio: new Date().toLocaleDateString("pt-BR"),
-            pedidoId: "#AROE-4422",
-            status: "Aguardando orçamento",
-            statusCor:
-              "bg-orange-100 text-orange-700 dark:bg-orange-950/40 dark:text-orange-400",
-            entregaInfo: "Validade: 180 dias",
-            textoExtraido:
-              "Dra. Júlia Lima - Geriatria\nCRM: 112233/SP\n\nPaciente: Irene dos Santos\n\nUso Diário:\n1. Carbonato de Cálcio 500mg\n2. Alendronato Sódico 70mg\n3. Magnésio Quelato 150mg\nTomar 1 vez ao dia pela manhã.",
-            confidence: 91,
-            imagemUrl:
-              "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=500&auto=format&fit=crop&q=60",
-            dadosEstruturados: {
-              paciente: "Irene dos Santos",
-              nomeMedico: "Dra. Júlia Lima",
-              crmMedico: "112233/SP",
-              cnpjFarmacia: "99.888.777/0001-11",
-              dataEmissao: new Date().toLocaleDateString("pt-BR"),
-              validadeDias: "180",
-              tipoReceita: "Uso Contínuo",
-            },
-          },
-        ],
-      },
     },
     {
       id: "farmacia",
       nome: "NatuFórmula (Farmácia Parceira)",
       tag: "Visão Corporativa B2B",
-      descricao:
-        "Painel da farmácia de manipulação para capturar as receitas limpas e responder os orçamentos do Ricardo e da Irene.",
+      descricao: "Painel da farmácia de manipulação para capturar as receitas limpas e responder os orçamentos do Ricardo e da Irene.",
       cor: "border-purple-200 dark:border-purple-900 bg-purple-50/40 dark:bg-purple-950/10",
-      icone: (
-        <Building2 className="text-purple-600 dark:text-purple-400" size={20} />
-      ),
-      payload: {
-        user: { nome: "NatuFórmula Centro", tipo: "Farmácia Parceira" },
-        receitasIniciais: [],
-      },
+      icone: <Building2 className="text-purple-600 dark:text-purple-400" size={20} />,
     },
   ];
 
-  const handleSelectPersona = (persona) => {
+  const handleSelectPersona = (personaId) => {
     setIsDemoModalOpen(false);
 
-    // 1. Salva os dados do payload
-    localStorage.setItem("@Aroe:demo_session", JSON.stringify(persona.payload));
+    // PUXANDO O JSON DA PERSONA SELECIONADA ADQUIRIDO DO OUTRO ARQUIVO
+    const selectedPayload = personasPayloads[personaId];
 
-    // 2. ADICIONE ISSO: Define o modo baseado no ID da persona
-    const mode = persona.id === "farmacia" ? "pharmacy" : "patient";
+    // 1. Salva os dados do payload correspondente
+    localStorage.setItem("@Aroe:demo_session", JSON.stringify(selectedPayload));
+
+    // 2. Define o modo baseado no ID da persona
+    const mode = personaId === "farmacia" ? "pharmacy" : "patient";
     localStorage.setItem("@Aroe:dashboard_mode", mode);
 
-    navigate("/dashboard");
+    // 3. REDIRECIONAMENTO CONDICIONAL
+    if (personaId === "farmacia") {
+      navigate("/dashboard/pharmacy/dashboard");
+    } else {
+      navigate("/dashboard");
+    }
   };
+
   function handleSubmit(e) {
     e.preventDefault();
-    // Limpa sessões de demonstração se logar normalmente
     localStorage.removeItem("@Aroe:demo_session");
     navigate("/dashboard");
   }
@@ -199,18 +105,28 @@ export default function Login() {
               className="mt-2 w-full px-3 py-2 text-sm bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg focus:ring-2 focus:ring-[#4DAA5C] transition-colors"
             />
           </div>
-          <div>
+          
+          <div className="relative">
             <label className="block text-xs font-semibold text-gray-600 dark:text-slate-400">
               Senha
             </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-              className="mt-2 w-full px-3 py-2 text-sm bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg focus:ring-2 focus:ring-[#4DAA5C] transition-colors"
-            />
+            <div className="relative mt-2">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+                className="w-full pl-3 pr-10 py-2 text-sm bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg focus:ring-2 focus:ring-[#4DAA5C] transition-colors"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
 
           <Button
@@ -271,7 +187,7 @@ export default function Login() {
                 <button
                   key={persona.id}
                   type="button"
-                  onClick={() => handleSelectPersona(persona)}
+                  onClick={() => handleSelectPersona(persona.id)}
                   className={`w-full text-left p-4 rounded-xl border transition-all flex items-start gap-3 hover:scale-[1.01] ${persona.cor}`}
                 >
                   <div className="p-2.5 rounded-xl bg-white dark:bg-slate-950 shadow-sm shrink-0 mt-0.5">

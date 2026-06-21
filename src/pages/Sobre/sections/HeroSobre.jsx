@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 
 export default function HeroSobre() {
   return (
-    <section className="relative overflow-hidden bg-white dark:bg-slate-950 pt-32 pb-24 transition-colors duration-500">
+    <section id="heroSobre" className="relative overflow-hidden bg-white dark:bg-slate-950 pt-32 pb-24 transition-colors duration-500">
       
       {/* Wave/Blur decorativo no topo */}
       <div className="absolute top-0 left-0 w-full overflow-hidden pointer-events-none">

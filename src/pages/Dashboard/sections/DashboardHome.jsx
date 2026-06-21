@@ -7,73 +7,35 @@ import {
     Heart, 
     ChevronRight, 
     Loader2,
-    Activity // Corrigido: importando o ícone correto diretamente do lucide
+    Activity,
+    Calendar,
+    ArrowRight,
+    History,
+    ShoppingBag,
+    Bell,
+    HeartPulse,
+    FileText
 } from 'lucide-react'
 import { useThemeContext } from '../../../contexts/ThemeContext'
+import { personasPayloads } from '../../../data/personasData'
 import Tesseract from 'tesseract.js'
+import { useOutletContext } from 'react-router-dom'
 
 const DEMO_STORAGE_KEY = '@Aroe:demo_session'
-
-// Base de dados simulada estruturada pelas chaves lidas na sessão
-const DADOS_HOME_POR_PERFIL = {
-    amanda: {
-        nome: 'Amanda',
-        mensagemWelcome: 'Sua saúde está em dia. Você tem <span class="font-bold text-white underline decoration-wavy decoration-emerald-400">1 pedido</span> em andamento e suas receitas foram validadas.',
-        orders: [
-            {
-                id: 1,
-                productName: 'Vitaminas A-Z',
-                formula: 'Fórmula manipulada em cápsulas',
-                status: 'Recebido',
-                statusDate: '10/12',
-                nextStatus: 'Em Produção',
-                nextDate: '11/12',
-                price: 'R$ 43,50',
-                pharmacies: 3,
-                farmaciaDestaque: 'Farmácia Bem Viver',
-                stepAtivo: 1
-            }
-        ]
-    },
-    irene: {
-        nome: 'Dona Irene',
-        mensagemWelcome: 'Monitore os cuidados de sua mãe. Há <span class="font-bold text-white underline decoration-wavy decoration-emerald-400">1 pedido</span> em produção urgente de anti-hipertensivos.',
-        orders: [
-            {
-                id: 2,
-                productName: 'Probióticos + Protetor Coronário',
-                formula: 'Fórmula em sachês de absorção rápida',
-                status: 'Produção',
-                statusDate: '06/06',
-                nextStatus: 'Pronto para Envio',
-                nextDate: '09/06',
-                price: 'R$ 112,90',
-                pharmacies: 5,
-                farmaciaDestaque: 'Naturale Manipulação',
-                stepAtivo: 2
-            }
-        ]
-    },
-    ricardo: {
-        nome: 'Ricardo',
-        mensagemWelcome: 'Seu dependente possui <span class="font-bold text-white underline decoration-wavy decoration-slate-400">0 pedidos</span> ativos no momento. Faça um novo orçamento abaixo.',
-        orders: []
-    }
-}
 
 export default function DashboardHome() {
     const { highContrast } = useThemeContext()
     const fileInputRef = useRef(null)
     
-    // Estado do perfil controlado de forma silenciosa via Session
     const [perfilAtivo, setPerfilAtivo] = useState('amanda') 
     const [isProcessing, setIsProcessing] = useState(false)
     const [ocrResult, setOcrResult] = useState(null)
 
-    // Captura os dados injetados da Persona no ciclo de vida da aplicação
+    // Captura a função de navegação diretamente do Outlet pai
+    const { onNavigateToTab } = useOutletContext() 
+
     useEffect(() => {
         const demoDataRaw = localStorage.getItem(DEMO_STORAGE_KEY)
-        
         if (demoDataRaw) {
             const session = JSON.parse(demoDataRaw)
             const nomeUsuario = session.user?.nome || ''
@@ -82,16 +44,55 @@ export default function DashboardHome() {
                 setPerfilAtivo('ricardo')
             } else if (nomeUsuario.includes('Irene')) {
                 setPerfilAtivo('irene')
+            } else if (nomeUsuario.includes('NatuFórmula') || session.user?.tipo === 'Farmácia Parceira') {
+                setPerfilAtivo('farmacia')
             } else {
                 setPerfilAtivo('amanda')
             }
         }
-        // Reseta o OCR caso mude de sessão em testes rápidos
         setOcrResult(null)
     }, [])
 
-    // Resgate seguro de dados evitando quebras de objetos indefinidos
-    const dadosPerfil = DADOS_HOME_POR_PERFIL[perfilAtivo] || DADOS_HOME_POR_PERFIL['amanda']
+    const dadosPerfil = personasPayloads[perfilAtivo] || personasPayloads['amanda']
+
+    // Configuração dos mini cards dinâmicos ligando os payloads às rotas reais do React Router
+    const widgetsResumo = [
+        {
+            id: '/dashboard/pedidos',
+            label: 'Pedidos',
+            icon: ShoppingBag,
+            cor: 'text-amber-500 bg-amber-50 dark:bg-amber-950/20',
+            info: dadosPerfil.receitasIniciais?.length > 0 ? `${dadosPerfil.receitasIniciais.length} Ativo(s)` : 'Nenhum ativo'
+        },
+        {
+            id: '/dashboard/receitas',
+            label: 'Minhas Receitas',
+            icon: FileText,
+            cor: 'text-purple-500 bg-purple-50 dark:bg-purple-950/20',
+            info: '3 Salvas'
+        },
+        {
+            id: '/dashboard/tratamentos',
+            label: 'Tratamentos',
+            icon: HeartPulse,
+            cor: 'text-rose-500 bg-rose-50 dark:bg-rose-950/20',
+            info: '2 Em andamento'
+        },
+        {
+            id: '/dashboard/lembretes',
+            label: 'Lembretes',
+            icon: Bell,
+            cor: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-950/20',
+            info: 'Próximo: 20:00h'
+        },
+        {
+            id: '/dashboard/historico',
+            label: 'Histórico',
+            icon: History,
+            cor: 'text-blue-500 bg-blue-50 dark:bg-blue-950/20',
+            info: 'Ver atividades'
+        }
+    ]
 
     const handleOcrProcess = async (event) => {
         const file = event.target.files[0]
@@ -117,13 +118,12 @@ export default function DashboardHome() {
         card: highContrast
             ? 'bg-white text-black border-4 border-black dark:bg-black dark:text-white dark:border-white shadow-none'
             : 'bg-white/80 dark:bg-slate-900/50 backdrop-blur-md border border-slate-200 dark:border-slate-800 shadow-sm',
+        overviewCard: highContrast
+            ? 'bg-white text-black border-2 border-black p-4 rounded-xl text-left font-bold'
+            : 'bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/60 p-4 rounded-xl text-left hover:border-purple-500/40 dark:hover:border-purple-500/40 hover:shadow-md transition-all duration-300 group',
         welcomeCard: highContrast
-            ? 'bg-black text-white p-8 rounded-2xl'
-            : perfilAtivo === 'irene' 
-                ? 'bg-gradient-to-r from-rose-600 to-orange-600 p-8 rounded-2xl text-white shadow-lg shadow-rose-200 dark:shadow-none'
-                : perfilAtivo === 'ricardo'
-                ? 'bg-gradient-to-r from-blue-600 to-cyan-600 p-8 rounded-2xl text-white shadow-lg shadow-blue-200 dark:shadow-none'
-                : 'bg-gradient-to-r from-purple-600 to-indigo-600 p-8 rounded-2xl text-white shadow-lg shadow-purple-200 dark:shadow-none',
+            ? 'bg-black text-white p-6 rounded-2xl border-4 border-black'
+            : `bg-gradient-to-br ${dadosPerfil.ui.gradient} p-6 rounded-2xl text-white`,
         statusActive: 'bg-emerald-500 text-white',
         statusNext: 'bg-purple-100 text-purple-600 border-2 border-purple-200 dark:bg-purple-900/30 dark:border-purple-800 dark:text-purple-400',
         statusInactive: 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-600',
@@ -132,8 +132,7 @@ export default function DashboardHome() {
     }
 
     return (
-        <div className="max-w-6xl mx-auto space-y-6 transition-colors duration-500 pb-10">
-            {/* Input File Escondido */}
+        <div className="max-w-6xl mx-auto space-y-6 transition-colors duration-500 pb-10 px-4 sm:px-0">
             <input 
                 type="file" 
                 ref={fileInputRef} 
@@ -142,22 +141,80 @@ export default function DashboardHome() {
                 className="hidden" 
             />
 
-            {/* Seção de Boas-vindas Dinâmica */}
+            {/* Seção de Boas-vindas */}
             <div className={styles.welcomeCard}>
-                <div className="max-w-2xl">
-                    <h2 className="text-3xl font-bold mb-3">Olá, {dadosPerfil.nome}! ✨</h2>
-                    <p 
-                        className="text-purple-100 dark:text-slate-300 text-lg leading-relaxed"
-                        dangerouslySetInnerHTML={{ __html: dadosPerfil.mensagemWelcome }}
-                    />
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div className="space-y-3 max-w-2xl">
+                        <div className="flex items-center gap-3">
+                            <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-md ${dadosPerfil.ui.badgeCor}`}>
+                                {dadosPerfil.ui.badge}
+                            </span>
+                            <span className="text-white/40 text-xs">•</span>
+                            <span className="text-xs font-medium text-purple-100/80 dark:text-slate-300 flex items-center gap-1">
+                                <Calendar size={12} />
+                                {new Date().toLocaleDateString("pt-BR", { weekday: 'long', day: 'numeric', month: 'short' })}
+                            </span>
+                        </div>
+                        <h2 className="text-2xl sm:text-3xl font-black tracking-tight">
+                            Olá, {dadosPerfil.user.nome} 
+                        </h2>
+                        <p 
+                            className="text-white/90 dark:text-slate-200 text-sm sm:text-base leading-relaxed font-normal"
+                            dangerouslySetInnerHTML={{ __html: dadosPerfil.ui.mensagemWelcome }}
+                        />
+                    </div>
+
+                    {dadosPerfil.receitasIniciais.length > 0 && dadosPerfil.receitasIniciais[0].price && (
+                        <div className="bg-white/10 backdrop-blur-md border border-white/10 p-4 rounded-xl flex items-center gap-4 shrink-0 md:max-w-xs w-full justify-between">
+                            <div>
+                                <p className="text-[10px] uppercase font-bold text-white/60 tracking-wider">Última Proposta</p>
+                                <p className="text-xl font-black mt-0.5">{dadosPerfil.receitasIniciais[0].price}</p>
+                                <p className="text-[11px] text-white/80 mt-0.5">{dadosPerfil.receitasIniciais[0].farmaciaDestaque}</p>
+                            </div>
+                            <button 
+                                onClick={() => onNavigateToTab?.('/dashboard/pedidos')}
+                                className="p-2.5 bg-white text-slate-900 rounded-lg shadow-sm hover:bg-slate-100 transition-colors"
+                            >
+                                <ArrowRight size={16} className="text-purple-700" />
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
 
-            {/* Resultado do OCR / Aria Intelligent Reading */}
+            {/* GRID DE VISÃO GERAL DAS ABAS */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+                {widgetsResumo.map((widget) => {
+                    const IconComponent = widget.icon
+                    return (
+                        <button
+                            key={widget.id}
+                            type="button"
+                            onClick={() => onNavigateToTab?.(widget.id)}
+                            className={styles.overviewCard}
+                        >
+                            <div className="flex items-center justify-between gap-2 mb-3">
+                                <div className={`p-2 rounded-lg ${widget.cor} shrink-0`}>
+                                    <IconComponent size={18} />
+                                </div>
+                                <ChevronRight size={14} className="text-slate-300 dark:text-slate-600 group-hover:text-purple-500 group-hover:translate-x-0.5 transition-all" />
+                            </div>
+                            <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">
+                                {widget.label}
+                            </p>
+                            <p className={`text-sm font-bold mt-1 tracking-tight truncate ${highContrast ? 'text-black dark:text-white' : 'text-slate-800 dark:text-slate-200'}`}>
+                                {widget.info}
+                            </p>
+                        </button>
+                    )
+                })}
+            </div>
+
+            {/* Resultado do OCR */}
             {ocrResult && (
                 <div className="p-6 bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-900 rounded-3xl space-y-3 animate-fade-in">
                     <h4 className="font-bold text-purple-900 dark:text-purple-300 text-sm flex items-center gap-2">
-                        ✨ Aria identificou os seguintes componentes na receita de {dadosPerfil.nome}:
+                        ✨ Aria identificou os seguintes componentes na receita de {dadosPerfil.user.nome}:
                     </h4>
                     <p className="text-xs bg-white dark:bg-slate-900 p-4 rounded-xl border whitespace-pre-line text-slate-700 dark:text-slate-300">
                         {ocrResult}
@@ -173,45 +230,55 @@ export default function DashboardHome() {
                 </div>
             )}
 
-            {/* Seção de Acompanhamento de Pedidos */}
-            <section className="space-y-6">
+            {/* Mapeamento de receitasIniciais */}
+            <section className="space-y-4">
                 <div className="flex items-center justify-between px-2">
-                    <h3 className={`text-xl font-bold ${styles.textPrimary}`}>Acompanhamento de Pedido</h3>
-                    <button className="text-sm font-semibold text-purple-600 dark:text-purple-400 hover:underline flex items-center gap-1">
+                    <h3 className={`text-lg font-bold ${styles.textPrimary}`}>
+                        {dadosPerfil.user.tipo === 'Farmácia Parceira' ? 'Demandas Recebidas da Região' : 'Acompanhamento de Pedido'}
+                    </h3>
+                    <button 
+                        onClick={() => onNavigateToTab?.('/dashboard/historico')}
+                        className="text-sm font-semibold text-purple-600 dark:text-purple-400 hover:underline flex items-center gap-1"
+                    >
                         Ver histórico <ChevronRight size={16} />
                     </button>
                 </div>
 
-                {dadosPerfil.orders.map((order) => (
-                    <div key={order.id} className={`rounded-3xl p-8 transition-all ${styles.card}`}>
+                {dadosPerfil.receitasIniciais.map((order) => (
+                    <div key={order.id} className={`rounded-3xl p-6 sm:p-8 transition-all ${styles.card}`}>
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
                             <div className="flex items-center gap-5">
                                 <div className="w-14 h-14 bg-purple-50 dark:bg-purple-900/20 rounded-2xl flex items-center justify-center">
                                     <Package className="text-purple-600 dark:text-purple-400" size={28} />
                                 </div>
                                 <div>
-                                    <h3 className="text-2xl font-bold tracking-tight">{order.productName}</h3>
-                                    <p className={styles.textSecondary}>{order.formula}</p>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        <h3 className="text-xl sm:text-2xl font-bold tracking-tight">{order.nome}</h3>
+                                        <span className="text-[10px] px-2 py-0.5 font-medium bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded">
+                                            {order.pedidoId}
+                                        </span>
+                                    </div>
+                                    <p className={styles.textSecondary + " text-sm mt-0.5"}>{order.formula || "Fórmula extraída digitalmente"}</p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-3">
-                                <span className="px-5 py-2 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 rounded-full text-xs font-bold uppercase tracking-wider">
-                                    {order.status === 'Recebido' ? 'Processando' : 'Em Produção'}
+                                <span className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider ${order.statusCor || 'bg-emerald-100 text-emerald-700'}`}>
+                                    {order.status}
                                 </span>
                             </div>
                         </div>
 
-                        {/* Linha do tempo dinâmica */}
+                        {/* Linha do tempo */}
                         <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-12">
                             <div className="absolute hidden md:block top-6 left-0 right-0 h-0.5 bg-slate-100 dark:bg-slate-800 -z-10" />
                             {[
-                                { label: 'Recebido', date: order.statusDate, icon: CheckCircle, active: order.stepAtivo >= 1 },
-                                { label: 'Produção', date: order.nextDate, icon: Activity, active: order.stepAtivo >= 2 },
-                                { label: 'Enviado', date: 'Previsão Prox. Dias', icon: Truck, active: order.stepAtivo >= 3 },
-                                { label: 'Entrega', date: 'Previsão Prox. Dias', icon: Box, active: order.stepAtivo >= 4 }
+                                { label: 'Recebido', date: order.dataEnvio, icon: CheckCircle, active: (order.stepAtivo || 1) >= 1 },
+                                { label: 'Produção', date: order.nextDate || 'Em análise', icon: Activity, active: (order.stepAtivo || 1) >= 2 },
+                                { label: 'Enviado', date: 'Previsão Prox. Dias', icon: Truck, active: (order.stepAtivo || 1) >= 3 },
+                                { label: 'Entrega', date: 'Previsão Prox. Dias', icon: Box, active: (order.stepAtivo || 1) >= 4 }
                             ].map((step, idx) => {
                                 let stepStyle = styles.statusInactive
-                                if (step.active && idx + 1 === order.stepAtivo) {
+                                if (step.active && idx + 1 === (order.stepAtivo || 1)) {
                                     stepStyle = styles.statusNext 
                                 } else if (step.active) {
                                     stepStyle = styles.statusActive 
@@ -238,7 +305,7 @@ export default function DashboardHome() {
                             <div className="space-y-4">
                                 <div className="flex items-center gap-2">
                                     <Heart size={18} className="text-rose-500" />
-                                    <h4 className="font-bold text-sm">Autocuidado</h4>
+                                    <h4 className="font-bold text-sm">Ações</h4>
                                 </div>
                                 <button 
                                     onClick={() => fileInputRef.current?.click()}
@@ -257,16 +324,21 @@ export default function DashboardHome() {
                             <div className="space-y-1">
                                 <h4 className={styles.textSecondary + " text-sm font-medium"}>Melhor cotação obtida</h4>
                                 <div className="flex items-baseline gap-2">
-                                    <span className="text-3xl font-black text-emerald-600 dark:text-emerald-400">{order.price}</span>
-                                    <span className="text-xs text-slate-400 font-medium">/ total</span>
+                                    <span className="text-3xl font-black text-emerald-600 dark:text-emerald-400">
+                                        {order.price || 'Sob Análise'}
+                                    </span>
+                                    {order.price && <span className="text-xs text-slate-400 font-medium">/ total</span>}
                                 </div>
-                                <p className="text-xs text-slate-400">{order.pharmacies} farmácias homologadas</p>
+                                <p className="text-xs text-slate-400">
+                                    {order.pharmacies || '0'} {order.pharmacies === 1 ? 'farmácia homologada' : 'farmácias homologadas'}
+                                </p>
                             </div>
 
                             <div className="bg-slate-50 dark:bg-slate-800/40 rounded-2xl p-4 flex items-center justify-between border border-dashed border-slate-200 dark:border-slate-700">
                                 <div>
-                                    <p className="text-[10px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-widest mb-1">Destaque</p>
-                                    <p className="text-sm font-bold">{order.farmaciaDestaque}</p>
+                                    <p className="text-[10px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-widest mb-1">Status</p>
+                                    <p className="text-sm font-bold">{order.farmaciaDestaque || 'Aguardando Propostas'}</p>
+                                    <p className="text-[11px] text-slate-400 mt-0.5">{order.entregaInfo}</p>
                                 </div>
                                 <button className="p-2 bg-white dark:bg-slate-800 rounded-lg shadow-sm">
                                     <ChevronRight size={18} className="text-slate-400" />
@@ -276,18 +348,24 @@ export default function DashboardHome() {
                     </div>
                 ))}
 
-                {/* State vazio se o perfil selecionado não tiver pedidos ativos (Ex: Ricardo) */}
-                {dadosPerfil.orders.length === 0 && (
-                    <div className="text-center py-12 bg-slate-50 dark:bg-slate-900/40 border border-dashed rounded-3xl p-6">
+                {/* Empty State */}
+                {dadosPerfil.receitasIniciais.length === 0 && (
+                    <div className="text-center py-16 bg-slate-50 dark:bg-slate-900/40 border border-dashed rounded-3xl p-6">
                         <Package size={40} className="mx-auto text-slate-300 dark:text-slate-700 mb-3" />
-                        <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300">Nenhum pedido ativo para {dadosPerfil.nome}</h4>
-                        <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">Envie uma nova receita no botão abaixo para iniciar uma cotação em tempo real com as farmácias parceiras.</p>
-                        <button 
-                            onClick={() => fileInputRef.current?.click()}
-                            className="mt-4 px-4 py-2 bg-purple-600 text-white rounded-xl text-xs font-bold hover:bg-purple-700 transition-all"
-                        >
-                            Digitalizar Nova Receita
-                        </button>
+                        <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300">Nenhuma demanda activa para {dadosPerfil.user.nome}</h4>
+                        <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+                            {dadosPerfil.user.tipo === 'Farmácia Parceira' 
+                              ? 'Aguarde novas notificações de receitas médicas postadas por pacientes na sua região geográfica.' 
+                              : 'Envie uma nova receita no botão abaixo para disparar um orçamento simultâneo.'}
+                        </p>
+                        {dadosPerfil.user.tipo !== 'Farmácia Parceira' && (
+                            <button 
+                                onClick={() => fileInputRef.current?.click()}
+                                className="mt-4 px-4 py-2 bg-purple-600 text-white rounded-xl text-xs font-bold hover:bg-purple-700 transition-all"
+                            >
+                                Digitalizar Nova Receita
+                            </button>
+                        )}
                     </div>
                 )}
             </section>
