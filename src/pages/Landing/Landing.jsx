@@ -4,6 +4,7 @@ import HowItWorksSection from './sections/HowItWorksSection'
 import CompareSection from './sections/CompareSection'
 import PricingSection from './sections/PricingSection'
 import FaqSection from './sections/FaqSection'
+import ContactSection from './sections/ContactSection'
 
 export default function Landing() {
     return (
@@ -13,6 +14,7 @@ export default function Landing() {
             <IntelligenceSection />
             <CompareSection />
             <PricingSection />
+            <ContactSection />
             <FaqSection />
         </main>
     )

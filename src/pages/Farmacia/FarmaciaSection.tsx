@@ -207,8 +207,6 @@ export default function FarmaciaSection() {
                 <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f020_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f020_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#33415510_1px,transparent_1px),linear-gradient(to_bottom,#33415510_1px,transparent_1px)] bg-[size:60px_60px]" />
             </div>
 
-            <Header />
-
             <main id="heroFarmacia" className="pt-32 pb-24">
                 <div className="max-w-7xl mx-auto px-6">
                     {/* Wave/Blur decorativo no topo */}

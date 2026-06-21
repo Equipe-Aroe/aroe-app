@@ -1,21 +1,19 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Sparkles, User, Building2, X, Moon, Sun, Accessibility } from "lucide-react";
+import { Eye, EyeOff, Sparkles, User, Building2, X, Moon, Sun, Accessibility } from "lucide-react";
 import AuthLayout from "./AuthLayout";
 import Button from "../../components/ui/Button";
 import { useThemeContext } from "../../contexts/ThemeContext";
 import AccessibilityToolbar from "../../components/layout/AccessibilityToolbar";
-
-
-import { personasPayloads } from "../../data/personasData"; 
+import { personasPayloads } from "../../data/personasData";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false); // Colocado no lugar correto!
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
   const navigate = useNavigate();
   const { darkMode, toggleDarkMode } = useThemeContext();
-
 
   const personas = [
     {
@@ -57,7 +55,12 @@ export default function Login() {
     const mode = personaId === "farmacia" ? "pharmacy" : "patient";
     localStorage.setItem("@Aroe:dashboard_mode", mode);
 
-    navigate("/dashboard");
+    // 3. REDIRECIONAMENTO CONDICIONAL
+    if (personaId === "farmacia") {
+      navigate("/dashboard/pharmacy/dashboard");
+    } else {
+      navigate("/dashboard");
+    }
   };
 
   function handleSubmit(e) {
@@ -102,18 +105,28 @@ export default function Login() {
               className="mt-2 w-full px-3 py-2 text-sm bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg focus:ring-2 focus:ring-[#4DAA5C] transition-colors"
             />
           </div>
-          <div>
+          
+          <div className="relative">
             <label className="block text-xs font-semibold text-gray-600 dark:text-slate-400">
               Senha
             </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-              className="mt-2 w-full px-3 py-2 text-sm bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg focus:ring-2 focus:ring-[#4DAA5C] transition-colors"
-            />
+            <div className="relative mt-2">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+                className="w-full pl-3 pr-10 py-2 text-sm bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg focus:ring-2 focus:ring-[#4DAA5C] transition-colors"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
 
           <Button
