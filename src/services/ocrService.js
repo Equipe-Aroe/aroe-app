@@ -2,6 +2,58 @@ import Tesseract from 'tesseract.js';
 import { validarCNPJ } from '../utils/validateCnpj';
 
 /**
+ * Inicializa a câmera nativa do dispositivo.
+ * Retorna o fluxo (stream) para ser associado à tag <video>.
+ */
+export const iniciarCamera = async () => {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: { ideal: "environment" } }, // Câmera traseira em celulares
+            audio: false
+        });
+        return stream;
+    } catch (error) {
+        console.error("Erro ao acessar hardware da câmera:", error);
+        throw new Error("Não foi possível acessar a câmera. Verifique as permissões.");
+    }
+};
+
+/**
+ * Interrompe todos os rastros de hardware ativos da câmera.
+ */
+export const pararCamera = (stream) => {
+    if (stream && stream.getTracks) {
+        stream.getTracks().forEach(track => track.stop());
+    }
+};
+
+/**
+ * Captura o frame atual de um elemento HTMLVideoElement, binariza e retorna um objeto File.
+ */
+export const capturarFotoDaCamera = (videoElement) => {
+    if (!videoElement) throw new Error("Elemento de vídeo não encontrado.");
+
+    const canvas = document.createElement('canvas');
+    canvas.width = videoElement.videoWidth;
+    canvas.height = videoElement.videoHeight;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error("Não foi possível inicializar o contexto 2D do Canvas.");
+
+    // Desenha o frame atual do vídeo no Canvas temporário
+    ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+
+    return new Promise((resolve) => {
+        canvas.toBlob((blob) => {
+            if (blob) {
+                const arquivoFoto = new File([blob], `receita_camera_${Date.now()}.jpg`, { type: "image/jpeg" });
+                resolve(arquivoFoto);
+            }
+        }, 'image/jpeg', 0.95);
+    });
+};
+
+/**
  * Aplica um filtro de binarização (preto e branco) na imagem para melhorar o OCR.
  */
 export const preprocessImage = (file) => {

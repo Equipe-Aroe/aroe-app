@@ -41,7 +41,7 @@ export default function HeroSection() {
 
                 <div className="flex gap-2 sm:gap-4 flex-wrap mb-8 sm:mb-10">
                     <Button variant="outline" onClick={() => window.location.href = '/pages/farmacia'}>Sou Farmácia</Button>
-                    <Button variant="primary">Enviar Receita</Button>
+                    <Button variant="primary" onClick={() => window.location.href = '/pages/login'}>Entrar como Paciente</Button>
                 </div>
 
                 <div className="flex gap-6 flex-wrap">
