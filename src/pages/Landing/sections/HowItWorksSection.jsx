@@ -1,4 +1,7 @@
+"use client"
+
 import { FileText, CircleDollarSign, Truck, Upload, Play } from 'lucide-react'
+import { motion } from 'framer-motion'
 import Button from '../../../components/ui/Button'
 
 const steps = [
@@ -22,6 +25,27 @@ const steps = [
     },
 ]
 
+// Variantes para o container dos textos (Stagger effect)
+const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.2, // Tempo entre a animação de cada filho
+        }
+    }
+}
+
+// Variantes para itens individuais da esquerda
+const itemVariants = {
+    hidden: { opacity: 0, x: -30 },
+    visible: { 
+        opacity: 1, 
+        x: 0,
+        transition: { type: "spring", stiffness: 100, damping: 15 }
+    }
+}
+
 export default function HowItWorksSection() {
     return (
         <section 
@@ -35,16 +59,25 @@ export default function HowItWorksSection() {
             />
 
             {/* text */}
-            <div className="relative z-20 w-full lg:w-1/2 flex items-center px-4 sm:px-6 lg:px-16 py-12 sm:py-16 lg:py-24 lg:min-h-screen">
+            <motion.div 
+                className="relative z-20 w-full lg:w-1/2 flex items-center px-4 sm:px-6 lg:px-16 py-12 sm:py-16 lg:py-24 lg:min-h-screen"
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, margin: "-100px" }}
+                variants={containerVariants}
+            >
                 <div className="flex flex-col gap-4 max-w-xl w-full">
 
                     {/* Badge */}
-                    <div className="inline-flex items-center gap-2 self-start text-xs font-semibold tracking-widest px-4 py-1.5 rounded-full border border-secondary/40 bg-secondary/10 text-secondary dark:text-secondary-light">
+                    <motion.div 
+                        variants={itemVariants}
+                        className="inline-flex items-center gap-2 self-start text-xs font-semibold tracking-widest px-4 py-1.5 rounded-full border border-secondary/40 bg-secondary/10 text-secondary dark:text-secondary-light"
+                    >
                         <span>🌿</span>
                         PRÁTICO E COMPLETO
-                    </div>
+                    </motion.div>
 
-                    <div>
+                    <motion.div variants={itemVariants}>
                         {/* Título Principal */}
                         <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-slate-900 dark:text-white leading-snug">
                             Controle seu tratamento do{" "}
@@ -55,13 +88,16 @@ export default function HowItWorksSection() {
                             Envie sua receita, compare preços e finalize com a melhor
                             opção — tudo pelo celular.
                         </p>
-                    </div>
+                    </motion.div>
 
                     {/* steps */}
                     <div className="flex flex-col gap-0 mt-4">
                         {steps.map((step, index) => (
-                            <div key={step.title} className="flex items-start gap-4">
-
+                            <motion.div 
+                                key={step.title} 
+                                variants={itemVariants}
+                                className="flex items-start gap-4"
+                            >
                                 <div className="flex flex-col items-center flex-shrink-0">
                                     {/* Círculo do Número */}
                                     <div className="w-11 h-11 mt-2 rounded-xl border-2 border-secondary/40 bg-secondary/10 text-secondary dark:text-secondary-light flex items-center justify-center font-bold text-xs">
@@ -69,7 +105,13 @@ export default function HowItWorksSection() {
                                     </div>
                                     {/* Linha Conectora da Timeline */}
                                     {index < steps.length - 1 && (
-                                        <div className="w-px h-8 bg-secondary/20 dark:bg-secondary/40 my-1" />
+                                        <motion.div 
+                                            className="w-px bg-secondary/20 dark:bg-secondary/40 my-1"
+                                            initial={{ height: 0 }}
+                                            whileInView={{ height: "2rem" }} // Equivalente ao h-8 do Tailwind
+                                            viewport={{ once: true }}
+                                            transition={{ delay: 0.4 + index * 0.2, duration: 0.5 }}
+                                        />
                                     )}
                                 </div>
 
@@ -83,35 +125,51 @@ export default function HowItWorksSection() {
                                         {step.desc}
                                     </p>
                                 </div>
-
-                            </div>
+                            </motion.div>
                         ))}
                     </div>
 
                     {/* buttons */}
-                    <div className="flex gap-4 flex-wrap mt-2">
+                    <motion.div variants={itemVariants} className="flex gap-4 flex-wrap mt-2">
                         <Button variant='primary'>
                             <Upload size={16} />
                             Enviar receita
                         </Button>
 
-                        {/* Modificado de outlineDark para alternar corretamente conforme o tema */}
                         <Button variant='outlineDark' className="dark:border-white dark:text-white dark:hover:bg-white/10">
                             <Play size={14} className="fill-current" />
                             Ver como funciona
                         </Button>
-                    </div>
+                    </motion.div>
 
                 </div>
-            </div>
+            </motion.div>
 
             {/* mockups */}
             <div className="relative z-20 w-full lg:w-1/2 flex justify-center items-center min-h-48 sm:min-h-64 lg:min-h-screen overflow-hidden px-4 sm:px-6 pb-12 sm:pb-16 lg:pb-0">
-                <img
+                <motion.img
                     src="/mockups.png"
                     alt="Mockup do aplicativo Aroê mostrando a tela de cotação"
                     loading="lazy"
                     className="w-full max-w-sm lg:max-w-2xl drop-shadow-2xl dark:brightness-95 contrast-105"
+                    
+                    // Animação de entrada + Flutuação contínua
+                    initial={{ opacity: 0, y: 50, scale: 0.95 }}
+                    whileInView={{ 
+                        opacity: 1, 
+                        y: [0, -12, 0], // Cria o efeito de flutuar suavemente para cima e para baixo
+                        scale: 1,
+                        transition: {
+                            y: {
+                                repeat: Infinity,
+                                duration: 5,
+                                ease: "easeInOut"
+                            },
+                            opacity: { duration: 0.8 },
+                            scale: { duration: 0.8 }
+                        }
+                    }}
+                    viewport={{ once: true }}
                 />
             </div>
 

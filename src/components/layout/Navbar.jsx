@@ -10,7 +10,8 @@ import { scrollToSection } from "../../utils/scrollToSection";
 const NAV_LINKS = [
   { label: "Início", to: "/", hash: "inicio" },
   { label: "Como funciona", to: "/", hash: "como-funciona" },
-  { label: "Sobre", to: "/pages/sobre" },
+  { label: "Sobre", to: "/pages/sobre", hash: "heroSobre"  },
+  { label: "Sou farmácia", to: "/pages/farmacia", hash: "heroFarmacia"  },
 ];
 
 export default function Navbar() {
@@ -20,13 +21,22 @@ export default function Navbar() {
 
   const { darkMode, toggleDarkMode } = useThemeContext();
 
-  // Removida a tipagem do TypeScript aqui:
-  function handleNavClick(e, link) {
-    if (!link.hash) return;
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
 
-    if (location.pathname === "/") {
-      e.preventDefault();
-      scrollToSection(link.hash);
+  function handleNavClick(e, link) {
+    // Se o link clicado pertencer à rota atual
+    if (location.pathname === link.to) {
+      if (link.hash) {
+        e.preventDefault();
+        scrollToSection(link.hash); // Faz rolagem suave interna
+      } else {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      setMenuOpen(false);
+    } else {
+      // Se for para outra página, fecha o menu mobile e deixa o useEffect do topo agir
       setMenuOpen(false);
     }
   }
@@ -75,7 +85,12 @@ export default function Navbar() {
               to="/"
               aria-label="Página inicial da Aroê"
               className="flex items-center shrink-0"
-              onClick={() => setMenuOpen(false)}
+              onClick={() => {
+                setMenuOpen(false);
+                if (location.pathname === "/") {
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }
+              }}
             >
               <img
                 src="/logo.png"

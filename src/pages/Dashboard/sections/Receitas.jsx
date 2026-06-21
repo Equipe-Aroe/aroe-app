@@ -1,7 +1,7 @@
-import { useState, useRef } from 'react'
-import { 
-    Search, 
-    Upload, 
+import { useState, useRef, useEffect } from 'react'
+import {
+    Search,
+    Upload,
     FileText,
     Loader2,
     X,
@@ -10,37 +10,34 @@ import {
     Clock
 } from 'lucide-react'
 import { useThemeContext } from '../../../contexts/ThemeContext'
-import Tesseract from 'tesseract.js'
 
-// Função matemática para validar CNPJ real
-function validarCNPJ(cnpj) {
-    cnpj = cnpj.replace(/[^\d]+/g, '');
-    if (cnpj.length !== 14) return false;
-    if (/^(\d)\1+$/.test(cnpj)) return false;
-    
-    let tamanho = cnpj.length - 2
-    let numeros = cnpj.substring(0, tamanho);
-    let digitos = cnpj.substring(tamanho);
-    let soma = 0;
-    let pos = tamanho - 7;
-    for (let i = tamanho; i >= 1; i--) {
-      soma += numeros.charAt(tamanho - i) * pos--;
-      if (pos < 2) pos = 9;
-    }
-    let resultado = soma % 11 < 2 ? 0 : 11 - (soma % 11);
-    if (resultado !== parseInt(digitos.charAt(0))) return false;
-    
-    tamanho = tamanho + 1;
-    numeros = cnpj.substring(0, tamanho);
-    soma = 0;
-    pos = tamanho - 7;
-    for (let i = tamanho; i >= 1; i--) {
-      soma += numeros.charAt(tamanho - i) * pos--;
-      if (pos < 2) pos = 9;
-    }
-    resultado = soma % 11 < 2 ? 0 : 11 - (soma % 11);
-    if (resultado !== parseInt(digitos.charAt(1))) return false;
-    return true;
+// Importa os serviços externos, utilitários e base centralizada
+import { processarReceitaOCR } from '../../../services/ocrService'
+import { validarCNPJ } from '../../../utils/validateCnpj'
+import { personasPayloads } from '../../../data/personasData'
+
+const DEMO_STORAGE_KEY = '@Aroe:demo_session'
+
+// Função geradora de CNPJ matemático válido para simulações e testes
+function gerarCnpjValido() {
+    const random = (n) => Math.round(Math.random() * n);
+    const mod = (dividendo, divisor) => Math.round(dividendo - (Math.floor(dividendo / divisor) * divisor));
+
+    const n1 = random(9); const n2 = random(9); const n3 = random(9);
+    const n4 = random(9); const n5 = random(9); const n6 = random(9);
+    const n7 = random(9); const n8 = random(9);
+    const n9 = 0; const n10 = 0; const n11 = 0; const n12 = 1; // Final 0001 (Matriz)
+
+    let d1 = n12 * 2 + n11 * 3 + n10 * 4 + n9 * 5 + n8 * 6 + n7 * 7 + n6 * 8 + n5 * 9 + n4 * 2 + n3 * 3 + n2 * 4 + n1 * 5;
+    d1 = 11 - (mod(d1, 11));
+    if (d1 >= 10) d1 = 0;
+
+    let d2 = d1 * 2 + n12 * 3 + n11 * 4 + n10 * 5 + n9 * 6 + n8 * 7 + n7 * 8 + n6 * 9 + n5 * 2 + n4 * 3 + n3 * 4 + n2 * 5 + n1 * 6;
+    d2 = 11 - (mod(d2, 11));
+    if (d2 >= 10) d2 = 0;
+
+    // Retorna mascarado no padrão: 00.000.000/0001-00
+    return `${n1}${n2}.${n3}${n4}${n5}.${n6}${n7}${n8}/${n9}${n10}${n11}${n12}-${d1}${d2}`;
 }
 
 export default function DashboardReceitas() {
@@ -49,104 +46,97 @@ export default function DashboardReceitas() {
     const [receitas, setReceitas] = useState([])
     const [isProcessing, setIsProcessing] = useState(false)
     const fileInputRef = useRef(null)
-    
+
+    // 2. Inicializa o estado com o mesmo padrão da Home
+    const [perfilAtivo, setPerfilAtivo] = useState('amanda')
+
     // Modais e Preview de Imagem
     const [receitaSelecionada, setReceitaSelecionada] = useState(null)
     const [isReviewOpen, setIsReviewOpen] = useState(false)
-    const [imgPreviewUrl, setImgPreviewUrl] = useState(null) 
-    
+    const [imgPreviewUrl, setImgPreviewUrl] = useState(null)
+
     // Estado do formulário de revisão humana
     const [reviewData, setReviewData] = useState({
-        id: null,
-        nome: '',
-        textoExtraido: '',
-        paciente: '',
-        crmMedico: '',
-        nomeMedico: '',
-        cnpjFarmacia: '',
-        dataEmissao: '',
-        validadeDias: '30',
-        tipoReceita: 'Simples', 
-        confidence: 0,
-        imagemUrl: '' 
+        id: null, nome: '', textoExtraido: '', paciente: '', crmMedico: '',
+        nomeMedico: '', cnpjFarmacia: '', dataEmissao: '', validadeDias: '30',
+        tipoReceita: 'Simples', confidence: 0, imagemUrl: ''
     })
 
-    const preprocessImage = (file) => {
-        return new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const img = new Image();
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    ctx.drawImage(img, 0, 0);
-                    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                    const data = imgData.data;
-                    for (let i = 0; i < data.length; i += 4) {
-                        const brightness = 0.34 * data[i] + 0.5 * data[i + 1] + 0.16 * data[i + 2];
-                        const v = brightness < 120 ? 0 : 255;
-                        data[i] = v; data[i+1] = v; data[i+2] = v;
-                    }
-                    ctx.putImageData(imgData, 0, 0);
-                    resolve(canvas.toDataURL());
-                };
-                img.src = event.target.result;
-            };
-            reader.readAsDataURL(file);
-        });
+    const handleGerarCnpjExemplo = () => {
+        const cnpjGerado = gerarCnpjValido();
+
+        setReviewData(prev => ({
+            ...prev,
+            cnpjFarmacia: cnpjGerado
+        }));
     };
 
+    // 3. Efeito sincronizador baseado no LocalStorage (Igual ao da Home)
+    useEffect(() => {
+        const demoDataRaw = localStorage.getItem(DEMO_STORAGE_KEY)
+
+        if (demoDataRaw) {
+            const session = JSON.parse(demoDataRaw)
+            const nomeUsuario = session.user?.nome || ''
+
+            if (nomeUsuario.includes('Ricardo')) {
+                setPerfilAtivo('ricardo')
+            } else if (nomeUsuario.includes('Irene')) {
+                setPerfilAtivo('irene')
+            } else if (nomeUsuario.includes('NatuFórmula') || session.user?.tipo === 'Farmácia Parceira') {
+                setPerfilAtivo('farmacia')
+            } else {
+                setPerfilAtivo('amanda')
+            }
+        }
+    }, []) // Roda uma vez ao montar o componente
+
+    // 4. Carrega as receitas certas sempre que o perfilAtivo for descoberto ou alterado
+    useEffect(() => {
+        if (personasPayloads && personasPayloads[perfilAtivo]) {
+
+            // Pega APENAS o array de receitas da persona ativa capturada no localStorage
+            const dadosPersona = personasPayloads[perfilAtivo].receitasIniciais || []
+
+            const receitasFormatadas = dadosPersona.map(dados => ({
+                id: dados.id || Math.floor(Math.random() * 10000),
+                nome: dados.nome || 'Fórmula Avançada',
+                tipo: dados.tipo || dados.dadosEstruturados?.tipoReceita || 'Simples',
+                dataEnvio: dados.dataEnvio || new Date().toLocaleDateString('pt-BR'),
+                pedidoId: dados.pedidoId || `#${Math.floor(100000 + Math.random() * 900000)}`,
+                status: dados.status || 'Aguardando orçamento',
+                statusCor: dados.statusCor || 'bg-orange-100 text-orange-700 dark:bg-orange-950/40 dark:text-orange-400',
+                entregaInfo: dados.entregaInfo || `Validade: ${dados.dadosEstruturados?.validadeDias || '30'} dias`,
+                textoExtraido: dados.textoExtraido || '',
+                confidence: dados.confidence || 100,
+                imagemUrl: dados.imagemUrl || '',
+                dadosEstruturados: {
+                    paciente: dados.dadosEstruturados?.paciente || 'Não informado',
+                    nomeMedico: dados.dadosEstruturados?.nomeMedico || 'Não informado',
+                    crmMedico: dados.dadosEstruturados?.crmMedico || '',
+                    cnpjFarmacia: dados.dadosEstruturados?.cnpjFarmacia || '',
+                    dataEmissao: dados.dadosEstruturados?.dataEmissao || new Date().toLocaleDateString('pt-BR'),
+                    validadeDias: dados.dadosEstruturados?.validadeDias || '30',
+                    tipoReceita: dados.dadosEstruturados?.tipoReceita || 'Simples'
+                }
+            }))
+
+            setReceitas(receitasFormatadas)
+        } else {
+            setReceitas([])
+        }
+    }, [perfilAtivo])
+
+    // Manipulador do Upload que consome o serviço de OCR isolado
     const handleOcrUpload = async (event) => {
         const file = event.target.files[0]
         if (!file) return
 
         setIsProcessing(true)
-        const urlOriginalDaImagem = URL.createObjectURL(file)
 
         try {
-            const processedImgUrl = await preprocessImage(file)
-            const result = await Tesseract.recognize(processedImgUrl, 'por')
-            const text = result.data.text
-            const confidence = result.data.confidence
-
-            // Expressões Regulares
-            const crmRegex = /(?:CRM|crm)[:\s]*(\d+[\s]*\/[\s]*[A-Za-z]{2}|\d+)/i
-            const cnpjRegex = /(\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}|\d{14})/
-            const pacienteRegex = /(?:Paciente|Nome|Para)[:\s]*([A-Za-zÀ-ÖØ-öø-ÿ\s]{3,30})/i
-            const medicoRegex = /(?:Dr\.|Dra\.|Médico|Médica)[:\s]*([A-Za-zÀ-ÖØ-öø-ÿ\s]{3,30})/i
-            const dataRegex = /(\d{2}\/\d{2}\/\d{4}|\d{2}\/\d{2}\/\d{2})/
-
-            const crmMatch = text.match(crmRegex)
-            const cnpjMatch = text.match(cnpjRegex)
-            const pacienteMatch = text.match(pacienteRegex)
-            const medicoMatch = text.match(medicoRegex)
-            const dataMatch = text.match(dataRegex)
-
-            const cnpjDetectado = cnpjMatch ? cnpjMatch[0].replace(/[^\d]+/g, '') : '';
-            const isCnpjValido = cnpjDetectado ? validarCNPJ(cnpjDetectado) : false;
-
-            let tipoDetectado = 'Simples';
-            if (/controle especial|notificação|retida/i.test(text)) tipoDetectado = 'Controle Especial (C1/C5)';
-            if (/antibiótico|antimicrobiano|amoxicilina|azimicina/i.test(text)) tipoDetectado = 'Antimicrobiano';
-
-            const primeiraLinha = text.split('\n').find(l => l.trim().length > 0) || 'Fórmula Identificada'
-
-            const dadosCapturados = {
-                id: Date.now(),
-                nome: primeiraLinha.substring(0, 30).trim(),
-                textoExtraido: text,
-                paciente: pacienteMatch ? pacienteMatch[1].trim() : '',
-                crmMedico: crmMatch ? crmMatch[1].trim() : '',
-                nomeMedico: medicoMatch ? medicoMatch[1].trim() : '',
-                cnpjFarmacia: isCnpjValido ? cnpjMatch[0].trim() : '', 
-                dataEmissao: dataMatch ? dataMatch[0] : new Date().toLocaleDateString('pt-BR'),
-                validadeDias: tipoDetectado === 'Antimicrobiano' ? '10' : '30',
-                tipoReceita: tipoDetectado,
-                confidence: confidence,
-                imagemUrl: urlOriginalDaImagem
-            }
+            // Chama o serviço responsável por pré-processar e rodar o Tesseract
+            const dadosCapturados = await processarReceitaOCR(file)
 
             // Fallback se faltar dados obrigatórios
             if (!dadosCapturados.paciente || !dadosCapturados.crmMedico || !dadosCapturados.cnpjFarmacia) {
@@ -158,8 +148,7 @@ export default function DashboardReceitas() {
 
         } catch (error) {
             console.error(error)
-            URL.revokeObjectURL(urlOriginalDaImagem)
-            alert("Erro ao ler e processar os metadados da receita.")
+            alert(error.message || "Erro ao ler e processar os metadados da receita.")
         } finally {
             setIsProcessing(false)
             if (fileInputRef.current) fileInputRef.current.value = '' // Limpa o input file
@@ -168,7 +157,7 @@ export default function DashboardReceitas() {
 
     const salvarReceitaNoEstado = (dados) => {
         const novaReceita = {
-            id: dados.id,
+            id: dados.id || Math.floor(Math.random() * 10000),
             nome: dados.nome || 'Fórmula Avançada',
             tipo: dados.tipoReceita,
             dataEnvio: new Date().toLocaleDateString('pt-BR'),
@@ -207,11 +196,12 @@ export default function DashboardReceitas() {
     }
 
     // Filtro de receitas baseado no input de busca
-    const receitasFiltradas = receitas.filter(receita => 
-        receita.nome.toLowerCase().includes(search.toLowerCase()) || 
-        receita.dadosEstruturados?.paciente.toLowerCase().includes(search.toLowerCase())
+    const receitasFiltradas = receitas.filter(receita =>
+        receita.nome.toLowerCase().includes(search.toLowerCase()) ||
+        receita.dadosEstruturados?.paciente?.toLowerCase().includes(search.toLowerCase())
     )
 
+    // Classes de estilização baseadas no contraste
     const cardBgClass = highContrast ? 'bg-white text-black border-2 border-black dark:bg-black dark:text-white dark:border-white' : 'bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/60 shadow-sm'
     const inputClass = highContrast ? 'border-2 border-black bg-white text-black dark:border-white' : 'bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100'
     const buttonActionClass = highContrast ? 'bg-black text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm'
@@ -233,7 +223,7 @@ export default function DashboardReceitas() {
                     />
                 </div>
 
-                <button 
+                <button
                     onClick={() => fileInputRef.current?.click()}
                     disabled={isProcessing}
                     className={`flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${buttonActionClass} ${isProcessing ? 'opacity-70 cursor-not-allowed' : ''}`}
@@ -253,7 +243,7 @@ export default function DashboardReceitas() {
                         <div key={receita.id} className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl gap-4 transition-all ${cardBgClass}`}>
                             <div className="flex items-center gap-4">
                                 {receita.imagemUrl ? (
-                                    <div 
+                                    <div
                                         onClick={() => setImgPreviewUrl(receita.imagemUrl)}
                                         className="w-14 h-14 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 relative group cursor-zoom-in shrink-0 shadow-inner"
                                     >
@@ -263,10 +253,12 @@ export default function DashboardReceitas() {
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="w-14 h-14 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 shrink-0"><FileText size={20} /></div>
-                                ) /* Fechamento correto da condicional de imagemUrl */}
+                                    <div className="w-14 h-14 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 shrink-0">
+                                        <FileText size={20} />
+                                    </div>
+                                )}
 
-                                <div className="space-y-0.5">
+                                <div className="space-y-0.5 text-left">
                                     <h4 className="text-base font-bold text-slate-900 dark:text-white">{receita.nome}</h4>
                                     <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-slate-400">
                                         <span className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded-md font-medium text-[10px]">{receita.tipo}</span>
@@ -295,9 +287,9 @@ export default function DashboardReceitas() {
 
             {/* LIGHTBOX DE EXPANSÃO DA MINIATURA */}
             {imgPreviewUrl && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 animate-fade-in" onClick={() => setImgPreviewUrl(null)}>
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4" onClick={() => setImgPreviewUrl(null)}>
                     <div className="relative max-w-3xl max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
-                        <button 
+                        <button
                             onClick={() => setImgPreviewUrl(null)}
                             className="absolute -top-12 right-0 text-white flex items-center gap-1 text-sm bg-white/10 px-3 py-1.5 rounded-xl hover:bg-white/20 transition-all"
                         >
@@ -312,7 +304,7 @@ export default function DashboardReceitas() {
             {isReviewOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
                     <div className="w-full max-w-3xl rounded-2xl p-6 shadow-2xl border flex flex-col md:flex-row gap-6 max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 dark:border-slate-800">
-                        <div className="flex-1 flex flex-col gap-2 border-r dark:border-slate-800 pr-0 md:pr-4text-left">
+                        <div className="flex-1 flex flex-col gap-2 border-r dark:border-slate-800 pr-0 md:pr-4 text-left">
                             <div className="flex items-center gap-2 text-amber-600 font-bold text-sm mb-2">
                                 <AlertTriangle size={18} /> <span>Revisão de Metadados Obrigatórios</span>
                             </div>
@@ -320,16 +312,18 @@ export default function DashboardReceitas() {
                                 <img src={reviewData.imagemUrl} alt="Documento" className="w-full h-40 object-contain rounded-lg bg-slate-50 dark:bg-slate-950 p-2 border border-dashed border-slate-200 dark:border-slate-800" />
                             )}
                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-2">Texto Digitalizado:</p>
-                            <div className="flex-1 p-3 bg-slate-50 dark:bg-slate-950 rounded-xl font-mono text-[11px] overflow-y-auto max-h-32 text-slate-700 dark:text-slate-300">{reviewData.textoExtraido || "Incapaz de ler"}</div>
+                            <div className="flex-1 p-3 bg-slate-50 dark:bg-slate-950 rounded-xl font-mono text-[11px] overflow-y-auto max-h-32 text-slate-700 dark:text-slate-300">
+                                {reviewData.textoExtraido || "Incapaz de ler"}
+                            </div>
                         </div>
 
                         <form onSubmit={handleSalvarRevisao} className="flex-1 space-y-3 text-left">
                             <h3 className="text-base font-bold text-slate-900 dark:text-white">Validar Receituário</h3>
-                            
+
                             <div className="grid grid-cols-2 gap-2">
                                 <div>
                                     <label className="text-[10px] font-bold text-slate-400 block">Tipo de Receita</label>
-                                    <select value={reviewData.tipoReceita} onChange={e => setReviewData(p => ({...p, tipoReceita: e.target.value}))} className={`w-full p-2 mt-1 rounded-lg text-xs ${inputClass}`}>
+                                    <select value={reviewData.tipoReceita} onChange={e => setReviewData(p => ({ ...p, tipoReceita: e.target.value }))} className={`w-full p-2 mt-1 rounded-lg text-xs ${inputClass}`}>
                                         <option value="Simples">Simples</option>
                                         <option value="Antimicrobiano">Antimicrobiano (10 dias)</option>
                                         <option value="Controle Especial (C1/C5)">Controle Especial</option>
@@ -338,34 +332,58 @@ export default function DashboardReceitas() {
                                 </div>
                                 <div>
                                     <label className="text-[10px] font-bold text-slate-400 block">Validade (Dias)</label>
-                                    <input type="number" value={reviewData.validadeDias} onChange={e => setReviewData(p => ({...p, validadeDias: e.target.value}))} className={`w-full p-2 mt-1 rounded-lg text-xs ${inputClass}`} />
+                                    <input type="number" value={reviewData.validadeDias} onChange={e => setReviewData(p => ({ ...p, validadeDias: e.target.value }))} className={`w-full p-2 mt-1 rounded-lg text-xs ${inputClass}`} />
                                 </div>
                             </div>
 
                             <div>
                                 <label className="text-[10px] font-bold text-slate-400 block">Nome do Paciente *</label>
-                                <input type="text" required value={reviewData.paciente} onChange={e => setReviewData(p => ({...p, paciente: e.target.value}))} className={`w-full p-2 mt-1 rounded-lg text-xs ${inputClass}`} />
+                                <input type="text" required value={reviewData.paciente} onChange={e => setReviewData(p => ({ ...p, paciente: e.target.value }))} className={`w-full p-2 mt-1 rounded-lg text-xs ${inputClass}`} />
                             </div>
 
                             <div className="grid grid-cols-2 gap-2">
                                 <div>
                                     <label className="text-[10px] font-bold text-slate-400 block">Nome do Médico</label>
-                                    <input type="text" value={reviewData.nomeMedico} onChange={e => setReviewData(p => ({...p, nomeMedico: e.target.value}))} className={`w-full p-2 mt-1 rounded-lg text-xs ${inputClass}`} placeholder="Dr. ..." />
+                                    <input type="text" value={reviewData.nomeMedico} onChange={e => setReviewData(p => ({ ...p, nomeMedico: e.target.value }))} className={`w-full p-2 mt-1 rounded-lg text-xs ${inputClass}`} placeholder="Dr. ..." />
                                 </div>
                                 <div>
                                     <label className="text-[10px] font-bold text-slate-400 block">CRM *</label>
-                                    <input type="text" required value={reviewData.crmMedico} onChange={e => setReviewData(p => ({...p, crmMedico: e.target.value}))} className={`w-full p-2 mt-1 rounded-lg text-xs ${inputClass}`} placeholder="12345/SP" />
+                                    <input type="text" required value={reviewData.crmMedico} onChange={e => setReviewData(p => ({ ...p, crmMedico: e.target.value }))} className={`w-full p-2 mt-1 rounded-lg text-xs ${inputClass}`} placeholder="12345/SP" />
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-2 gap-2">
                                 <div>
                                     <label className="text-[10px] font-bold text-slate-400 block">CNPJ Farmácia *</label>
-                                    <input type="text" required value={reviewData.cnpjFarmacia} onChange={e => setReviewData(p => ({...p, cnpjFarmacia: e.target.value}))} className={`w-full p-2 mt-1 rounded-lg text-xs ${inputClass}`} />
+                                    {/* Adicionada a div relative para envelopar o input e o botão juntos */}
+                                    <div className="relative flex items-center">
+                                        <input
+                                            type="text"
+                                            required
+                                            placeholder="00.000.000/0001-00"
+                                            value={reviewData.cnpjFarmacia}
+                                            onChange={e => setReviewData(p => ({ ...p, cnpjFarmacia: e.target.value }))}
+                                            className={`w-full p-2 pr-12 mt-1 rounded-lg text-xs ${inputClass}`} // Adicionado pr-12 para o texto não ficar por baixo do botão
+                                        />
+                                        {/* Botão posicionado de forma absoluta dentro do input */}
+                                        <button
+                                            type="button"
+                                            onClick={handleGerarCnpjExemplo}
+                                            className="absolute right-1.5 bottom-1 px-1.5 py-1 bg-purple-100 hover:bg-purple-200 dark:bg-purple-900/50 dark:hover:bg-purple-900/80 text-purple-700 dark:text-purple-300 rounded text-[9px] font-extrabold uppercase transition-colors"
+                                            title="Gerar CNPJ válido para teste"
+                                        >
+                                            Gerar
+                                        </button>
+                                    </div>
                                 </div>
                                 <div>
                                     <label className="text-[10px] font-bold text-slate-400 block">Data de Emissão</label>
-                                    <input type="text" value={reviewData.dataEmissao} onChange={e => setReviewData(p => ({...p, dataEmissao: e.target.value}))} className={`w-full p-2 mt-1 rounded-lg text-xs ${inputClass}`} />
+                                    <input
+                                        type="text"
+                                        value={reviewData.dataEmissao}
+                                        onChange={e => setReviewData(p => ({ ...p, dataEmissao: e.target.value }))}
+                                        className={`w-full p-2 mt-1 rounded-lg text-xs ${inputClass}`}
+                                    />
                                 </div>
                             </div>
 
@@ -382,7 +400,7 @@ export default function DashboardReceitas() {
             {receitaSelecionada && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setReceitaSelecionada(null)}>
                     <div className="w-full max-w-2xl rounded-2xl p-6 relative shadow-xl border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 flex flex-col md:flex-row gap-6" onClick={(e) => e.stopPropagation()}>
-                        
+
                         <div className="w-full md:w-48 space-y-2 text-left">
                             <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Documento Anexo</label>
                             {receitaSelecionada.imagemUrl ? (
@@ -393,7 +411,9 @@ export default function DashboardReceitas() {
                                     </div>
                                 </div>
                             ) : (
-                                <div className="h-44 rounded-xl bg-slate-100 dark:bg-slate-950 flex items-center justify-center text-slate-400"><FileText size={28} /></div>
+                                <div className="h-44 rounded-xl bg-slate-100 dark:bg-slate-950 flex items-center justify-center text-slate-400">
+                                    <FileText size={28} />
+                                </div>
                             )}
                         </div>
 
@@ -405,7 +425,9 @@ export default function DashboardReceitas() {
                                     </span>
                                     <h3 className="text-lg font-bold text-slate-900 dark:text-white">{receitaSelecionada.nome}</h3>
                                 </div>
-                                <button onClick={() => setReceitaSelecionada(null)} className="p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"><X size={18} /></button>
+                                <button onClick={() => setReceitaSelecionada(null)} className="p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
+                                    <X size={18} />
+                                </button>
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">

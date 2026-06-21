@@ -1,89 +1,74 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { 
     Check, 
-    Tag, 
-    Package, 
-    Bell, 
-    FileText, 
-    CheckCircle2, 
-    Gift, 
     ChevronRight, 
-    ChevronDown 
+    ChevronDown,
+    Bell,
+    Tag,
+    Package,
+    FileText,
+    CheckCircle2,
+    Gift
 } from 'lucide-react'
 import { useThemeContext } from '../../../contexts/ThemeContext'
+import { personasPayloads } from '../../../data/personasData'
 
-// Centralizando os dados iniciais com uma propriedade 'lida' e 'categoria' para permitir filtros dinâmicos
-const INITIAL_NOTIFICACOES = [
-    {
-        id: 1,
-        titulo: 'Novos orçamentos recebidos',
-        descricao: 'Você recebeu 3 novos orçamentos para "Enzimas Digestivas".',
-        tempo: 'Há 10 min',
-        icon: Tag,
-        iconBg: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400',
-        lida: false,
-        categoria: 'Pedidos'
-    },
-    {
-        id: 2,
-        titulo: 'Medicamento pronto para retirada',
-        descricao: 'Sua fórmula personalizada já está disponível na farmácia parceira.',
-        tempo: 'Há 2 horas',
-        icon: Package,
-        iconBg: 'bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400',
-        lida: false,
-        categoria: 'Pedidos'
-    },
-    {
-        id: 3,
-        titulo: 'Lembrete de Tratamento',
-        descricao: 'Está quase na hora de tomar seu Antiox Personalizado.',
-        tempo: 'Há 3 horas',
-        icon: Bell,
-        iconBg: 'bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400',
-        lida: false,
-        categoria: 'Tratamentos'
-    },
-    {
-        id: 4,
-        titulo: 'Receita enviada com sucesso',
-        descricao: 'Sua receita "Magnésio Quelato + B6" foi enviada para as farmácias.',
-        tempo: 'Ontem, 14:30',
-        icon: FileText,
-        iconBg: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
-        lida: true,
-        categoria: 'Sistema'
-    },
-    {
-        id: 5,
-        titulo: 'Cadastro Validado',
-        descricao: 'Seu perfil técnico e dados de acesso foram validados com sucesso.',
-        tempo: '28/05',
-        icon: CheckCircle2,
-        iconBg: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
-        lida: true,
-        categoria: 'Sistema'
-    },
-    {
-        id: 6,
-        titulo: 'Cupom de Boas-vindas Aroê',
-        descricao: 'Aproveite R$ 20 de desconto no seu primeiro pedido solicitado.',
-        tempo: '28/05',
-        icon: Gift,
-        iconBg: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
-        lida: true,
-        categoria: 'Sistema'
-    }
-]
-
+const DEMO_STORAGE_KEY = '@Aroe:demo_session'
 const TABS = ['Todos', 'Não lidas', 'Pedidos', 'Tratamentos', 'Sistema']
+
+// Mapeamento dinâmico para converter as strings do JSON em componentes Lucide reais
+const getIconComponent = (type) => {
+    const mapping = {
+        tag: Tag,
+        package: Package,
+        bell: Bell,
+        fileText: FileText,
+        checkCircle2: CheckCircle2,
+        gift: Gift,
+    }
+    return mapping[type] || Bell
+}
 
 export default function DashboardNotificacoes() {
     const { highContrast } = useThemeContext()
     const [activeTab, setActiveTab] = useState('Todos')
-    const [notificacoes, setNotificacoes] = useState(INITIAL_NOTIFICACOES)
+    const [perfilAtivo, setPerfilAtivo] = useState('amanda')
+    
+    // Inicializa o estado como um array vazio para evitar quebras no primeiro render
+    const [notificacoes, setNotificacoes] = useState([])
 
-    // Ações interativas para rodar em tempo real na demo
+    // 1. Sincroniza o perfil ativo com o localStorage de forma reativa
+    useEffect(() => {
+        const demoDataRaw = localStorage.getItem(DEMO_STORAGE_KEY)
+        
+        if (demoDataRaw) {
+            const session = JSON.parse(demoDataRaw)
+            const nomeUsuario = session.user?.nome || ''
+
+            if (nomeUsuario.includes('Ricardo')) {
+                setPerfilAtivo('ricardo')
+            } else if (nomeUsuario.includes('Irene')) {
+                setPerfilAtivo('irene')
+            } else if (nomeUsuario.includes('NatuFórmula') || session.user?.tipo === 'Farmácia Parceira') {
+                setPerfilAtivo('farmacia')
+            } else {
+                setPerfilAtivo('amanda')
+            }
+        }
+    }, [])
+
+    // 2. Sempre que a persona ativa mudar, carrega a lista correspondente de notificações
+    useEffect(() => {
+        const dadosPersona = personasPayloads[perfilAtivo] || personasPayloads['amanda']
+        if (dadosPersona && Array.isArray(dadosPersona.notificacoes)) {
+            setNotificacoes(dadosPersona.notificacoes)
+        } else {
+            setNotificacoes([])
+        }
+        setActiveTab('Todos') // Reseta a aba ao mudar de usuário
+    }, [perfilAtivo])
+
+    // Ações interativas em tempo real (Modifica o estado dinamicamente na demo)
     const marcarTodasComoLidas = () => {
         setNotificacoes(prev => prev.map(n => ({ ...n, lida: true })))
     }
@@ -105,7 +90,7 @@ export default function DashboardNotificacoes() {
         ? 'border-2 border-black text-black dark:border-white dark:text-white font-black'
         : 'border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900'
 
-    // Filtros lógicos baseados na tab ativa
+    // Filtros lógicos baseados na aba ativa
     const notificacoesFiltradas = notificacoes.filter(n => {
         if (activeTab === 'Todos') return true
         if (activeTab === 'Não lidas') return !n.lida
@@ -170,16 +155,16 @@ export default function DashboardNotificacoes() {
 
                     <div className="space-y-2.5">
                         {listaNaoLidas.map((notif) => {
-                            const IconComponent = notif.icon
+                            const IconComponent = getIconComponent(notif.iconType)
                             return (
                                 <div
                                     key={notif.id}
                                     onClick={() => marcarComoLida(notif.id)}
-                                    className={`flex items-center justify-between p-4 rounded-2xl gap-4 cursor-pointer transition-all ${unreadCardClass}`}
+                                    className={`flex items-center justify-between p-4 rounded-2xl gap-4 cursor-pointer group transition-all ${unreadCardClass}`}
                                     title="Clique para marcar como lida"
                                 >
                                     <div className="flex items-center gap-4 min-w-0">
-                                        <div className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                                        <div className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 group-hover:scale-110 transition-transform" />
                                         
                                         <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${highContrast ? 'border border-black dark:border-white' : notif.iconBg}`}>
                                             <IconComponent size={18} />
@@ -197,7 +182,7 @@ export default function DashboardNotificacoes() {
 
                                     <div className="flex items-center gap-4 shrink-0 text-slate-400 dark:text-slate-500">
                                         <span className="text-xs">{notif.tempo}</span>
-                                        <ChevronRight size={16} />
+                                        <ChevronRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
                                     </div>
                                 </div>
                             )
@@ -215,11 +200,11 @@ export default function DashboardNotificacoes() {
 
                     <div className="divide-y divide-slate-100/70 dark:divide-slate-800/40 rounded-2xl overflow-hidden bg-white/10 dark:bg-slate-950/5">
                         {listaLidas.map((notif) => {
-                            const IconComponent = notif.icon
+                            const IconComponent = getIconComponent(notif.iconType)
                             return (
                                 <div
                                     key={notif.id}
-                                    className={`flex items-center justify-between py-3.5 px-4 gap-4 transition-all ${readCardClass}`}
+                                    className={`flex items-center justify-between py-3.5 px-4 gap-4 cursor-pointer group transition-all ${readCardClass}`}
                                 >
                                     <div className="flex items-center gap-4 min-w-0 pl-4">
                                         <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${highContrast ? 'border border-black dark:border-white' : 'bg-slate-100 text-slate-500 dark:bg-slate-800/70 dark:text-slate-400'}`}>
@@ -238,7 +223,7 @@ export default function DashboardNotificacoes() {
 
                                     <div className="flex items-center gap-4 shrink-0 text-slate-400 dark:text-slate-500">
                                         <span className="text-xs">{notif.tempo}</span>
-                                        <ChevronRight size={16} />
+                                        <ChevronRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
                                     </div>
                                 </div>
                             )

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { 
     Search, 
     Calendar, 
@@ -13,58 +13,43 @@ import {
     AlertCircle
 } from 'lucide-react'
 import { useThemeContext } from '../../../contexts/ThemeContext'
+// Importa os dados reais do seu arquivo de personas
+import { personasPayloads } from '../../../data/personasData'
 
-const PEDIDOS_MOCK = [
-    {
-        id: 1,
-        codigo: '#122022',
-        itens: 'Enzimas digestivas + Magnésio Quelato',
-        data: '15/04/2026',
-        valor: 'R$ 148,90',
-        status: 'Em transporte',
-        statusIcon: Truck,
-        statusCor: 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400',
-        atualizacao: 'Previsão de entrega: Hoje até as 18h'
-    },
-    {
-        id: 2,
-        codigo: '#121984',
-        itens: 'Colágeno Tipo II - Dose Única',
-        data: '10/04/2026',
-        valor: 'R$ 89,00',
-        status: 'Entregue',
-        statusIcon: CheckCircle,
-        statusCor: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400',
-        atualizacao: 'Entregue em 12/04/2026'
-    },
-    {
-        id: 3,
-        codigo: '#121540',
-        itens: 'Ômega 3 Ultra + Vitamina D3',
-        data: '28/03/2026',
-        valor: 'R$ 210,50',
-        status: 'Processando pagamento',
-        statusIcon: Clock,
-        statusCor: 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400',
-        atualizacao: 'Aguardando confirmação bancária'
-    },
-    {
-        id: 4,
-        codigo: '#120811',
-        itens: 'Fórmula Manipulada Personalizada Antiox',
-        data: '15/03/2026',
-        valor: 'R$ 175,00',
-        status: 'Cancelado',
-        statusIcon: AlertCircle,
-        statusCor: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
-        atualizacao: 'Cancelado pelo usuário'
-    }
-]
+const DEMO_STORAGE_KEY = 'sua_chave_do_localstorage_aqui' // ⚠️ Substitua pela sua constante real caso ela venha de outro arquivo
 
 export default function DashboardPedidos() {
     const { highContrast } = useThemeContext()
-    const [activeTab, setActiveTab] = useState('andamento') // 'andamento' ou 'historico'
+    
+    // Estados locais para controle do perfil e filtros
+    const [perfilAtivo, setPerfilAtivo] = useState('amanda')
+    const [activeTab, setActiveTab] = useState('andamento') 
     const [search, setSearch] = useState('')
+
+    // Sincroniza o perfil ativo com a sessão simulada no localStorage
+    useEffect(() => {
+        const demoDataRaw = localStorage.getItem(DEMO_STORAGE_KEY)
+        
+        if (demoDataRaw) {
+            const session = JSON.parse(demoDataRaw)
+            const nomeUsuario = session.user?.nome || ''
+
+            if (nomeUsuario.includes('Ricardo')) {
+                setPerfilAtivo('ricardo')
+            } else if (nomeUsuario.includes('Irene')) {
+                setPerfilAtivo('irene')
+            } else if (nomeUsuario.includes('NatuFórmula') || session.user?.tipo === 'Farmácia Parceira') {
+                setPerfilAtivo('farmacia')
+            } else {
+                setPerfilAtivo('amanda')
+            }
+        }
+    }, [])
+
+    // Resgate seguro dos dados vindos diretamente do personasData.js
+    const dadosPerfil = personasPayloads[perfilAtivo] || personasPayloads['amanda']
+    // Puxa as receitas do perfil atual ou joga um array vazio se não houver
+    const receitasContexto = dadosPerfil?.receitasIniciais || []
 
     // Fallbacks visuais para Alto Contraste
     const cardBgClass = highContrast
@@ -79,17 +64,32 @@ export default function DashboardPedidos() {
         ? 'border-2 border-black text-black dark:border-white dark:text-white'
         : 'border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
 
-    // FILTRAGEM DINÂMICA (ESSENCIAL PARA A DEMO)
-    const pedidosFiltrados = PEDIDOS_MOCK.filter((pedido) => {
-        // 1. Filtro por Aba
-        if (activeTab === 'andamento' && (pedido.status === 'Entregue' || pedido.status === 'Cancelado')) {
+    // Função para mapear dinamicamente as cores e ícones dos status (JavaScript Puro)
+    const getStatusConfig = (status) => {
+        switch (status) {
+            case 'Entregue':
+                return { Icon: CheckCircle, cor: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400' }
+            case 'Em transporte':
+                return { Icon: Truck, cor: 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400' }
+            case 'Recebido':
+            case 'Aguardando orçamento':
+                return { Icon: Clock, cor: 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400' }
+            default:
+                return { Icon: AlertCircle, cor: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400' }
+        }
+    }
+
+    // Filtragem dos pedidos usando as chaves reais do seu arquivo
+    const pedidosFiltrados = receitasContexto.filter((receita) => {
+        // 1. Filtro por Aba (Andamento vs Histórico)
+        if (activeTab === 'andamento' && receita.status === 'Entregue') {
             return false
         }
         
-        // 2. Filtro por Termo de Busca (Nome do item ou Código)
+        // 2. Filtro por Termo de Busca (Mapeado para 'nome' e 'pedidoId')
         const termoBusca = search.toLowerCase()
-        const correspondeItem = pedido.itens.toLowerCase().includes(termoBusca)
-        const correspondeCodigo = pedido.codigo.toLowerCase().includes(termoBusca)
+        const correspondeItem = receita.nome?.toLowerCase().includes(termoBusca)
+        const correspondeCodigo = receita.pedidoId?.toLowerCase().includes(termoBusca)
         
         return correspondeItem || correspondeCodigo
     })
@@ -164,11 +164,13 @@ export default function DashboardPedidos() {
             {/* Listagem Dinâmica dos Cards */}
             <div className="space-y-3">
                 {pedidosFiltrados.length > 0 ? (
-                    pedidosFiltrados.map((pedido) => {
-                        const StatusIcon = pedido.statusIcon
+                    pedidosFiltrados.map((receita) => {
+                        const statusConfig = getStatusConfig(receita.status)
+                        const StatusIcon = statusConfig.Icon
+
                         return (
                             <div 
-                                key={pedido.id} 
+                                key={receita.id} 
                                 className={`flex flex-col lg:flex-row lg:items-center justify-between p-5 rounded-2xl gap-4 transition-all ${cardBgClass}`}
                             >
                                 <div className="flex items-start gap-4">
@@ -177,17 +179,20 @@ export default function DashboardPedidos() {
                                     </div>
                                     <div className="space-y-1">
                                         <h4 className="text-base font-bold text-slate-900 dark:text-white leading-tight">
-                                            {pedido.itens}
+                                            {receita.nome}
                                         </h4>
-                                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-400 dark:text-slate-500">
+                                        <p className="text-xs text-slate-400 dark:text-slate-500 font-medium">
+                                            {receita.formula}
+                                        </p>
+                                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-400 dark:text-slate-500 pt-1">
                                             <span className="font-bold text-emerald-600 dark:text-emerald-400">
-                                                Código: {pedido.codigo}
+                                                Código: {receita.pedidoId}
                                             </span>
                                             <span className="flex items-center gap-1">
-                                                <Calendar size={12} /> Realizado em {pedido.data}
+                                                <Calendar size={12} /> Enviado em {receita.dataEnvio}
                                             </span>
                                             <span className="font-semibold text-slate-700 dark:text-slate-300">
-                                                {pedido.valor}
+                                                {receita.price}
                                             </span>
                                         </div>
                                     </div>
@@ -195,18 +200,18 @@ export default function DashboardPedidos() {
 
                                 <div className="flex items-center justify-between lg:justify-end gap-6 border-t lg:border-t-0 pt-3 lg:pt-0 border-slate-50 dark:border-slate-800/40">
                                     <div className="text-left lg:text-right space-y-1">
-                                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${pedido.statusCor}`}>
+                                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${statusConfig.cor}`}>
                                             <StatusIcon size={12} />
-                                            {pedido.status}
+                                            {receita.status}
                                         </span>
                                         <p className="text-[11px] text-slate-400 dark:text-slate-500 tracking-tight">
-                                            {pedido.atualizacao}
+                                            {receita.entregaInfo}
                                         </p>
                                     </div>
 
                                     <div className="flex items-center gap-2">
                                         <button className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all ${buttonSecondaryClass}`}>
-                                            Rastrear pedido
+                                            Ver Proposta
                                         </button>
                                         <button className="p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
                                             <MoreVertical size={16} />
@@ -217,10 +222,11 @@ export default function DashboardPedidos() {
                         )
                     })
                 ) : (
-                    /* Feedback Visual de Lista Vazia */
                     <div className={`p-12 text-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 ${cardBgClass}`}>
                         <Package size={36} className="mx-auto text-slate-300 dark:text-slate-700 mb-2" />
-                        <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Nenhum pedido encontrado para o termo pesquisado.</p>
+                        <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                            Nenhum pedido ou cotação encontrado.
+                        </p>
                     </div>
                 )}
             </div>
@@ -233,9 +239,6 @@ export default function DashboardPedidos() {
                     </button>
                     <button className="w-8 h-8 rounded-lg text-xs font-bold bg-emerald-600 text-white shadow-sm">
                         1
-                    </button>
-                    <button className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${buttonSecondaryClass}`}>
-                        2
                     </button>
                     <button className={`p-2 rounded-lg transition-all ${buttonSecondaryClass}`}>
                         <ChevronRight size={14} />

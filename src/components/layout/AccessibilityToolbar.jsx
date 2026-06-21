@@ -19,6 +19,7 @@ export default function AccessibilityToolbar() {
     fontSize,
     increaseFontSize,
     decreaseFontSize,
+    setFontSize,       // Necessário pro slider clicável/arrastável
     colorFilter,      // Resgatado corretamente do hook
     setColorFilter,   // Resgatado corretamente do hook
     resetAccessibility,
@@ -175,7 +176,10 @@ export default function AccessibilityToolbar() {
 
             {/* Ajuste de Fonte */}
             <div>
-              <label className="text-xs font-medium text-slate-600 dark:text-slate-400 block mb-2">
+              <label
+                htmlFor="font-size-slider"
+                className="text-xs font-medium text-slate-600 dark:text-slate-400 block mb-2"
+              >
                 Tamanho da Fonte: {fontSize}px
               </label>
               <div className="flex items-center gap-2">
@@ -201,14 +205,29 @@ export default function AccessibilityToolbar() {
                   <Minus size={16} />
                 </button>
 
-                <div className="flex-1 bg-slate-100 dark:bg-slate-800 h-2 rounded">
-                  <div
-                    className="bg-purple-600 h-2 rounded transition-all"
-                    style={{
-                      width: `${((fontSize - 12) / 16) * 100}%`,
-                    }}
-                  />
-                </div>
+                <input
+                  id="font-size-slider"
+                  type="range"
+                  min={12}
+                  max={28}
+                  step={2}
+                  value={fontSize}
+                  onChange={(e) => setFontSize(Number(e.target.value))}
+                  aria-label="Tamanho da fonte"
+                  aria-valuemin={12}
+                  aria-valuemax={28}
+                  aria-valuenow={fontSize}
+                  className="
+                    flex-1
+                    h-2
+                    rounded
+                    accent-purple-600
+                    cursor-pointer
+                    focus:outline-none
+                    focus:ring-2
+                    focus:ring-purple-500/30
+                  "
+                />
 
                 <button
                   onClick={increaseFontSize}
